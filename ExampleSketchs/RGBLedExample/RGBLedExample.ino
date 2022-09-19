@@ -1,6 +1,6 @@
 int ledRojo = 0;
 int ledVerde = 1;
-int ledAzul = 4;
+int ledAzul = 2;
  
 void setup() {
   pinMode(ledRojo,OUTPUT);
