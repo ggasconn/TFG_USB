@@ -1,1 +1,0 @@
-/media/raid/ggc/Downloads/arduino-1.8.19/hardware/tools/avr/bin/avrdude -C/media/raid/ggc/Downloads/arduino-1.8.19/hardware/tools/avr/etc/avrdude.conf -v -pattiny85 -cusbasp -Pusb -Uflash:w:main.hex:i 
