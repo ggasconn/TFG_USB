@@ -19,7 +19,7 @@ extern "C" {
 	#include "light_ws2812/light_ws2812.h"
 }
 
-struct cRGB led[1];
+struct cRGB ledStatus[NUMBER_OF_LEDS];
 
 /* ------------------------------------------------------------------------- */
 /* ----------------------------- USB interface ----------------------------- */
@@ -74,47 +74,35 @@ static uchar replyBuffer[33]; // 32 for data + 1 for report id
 /* usbFunctionRead() is called when the host requests a chunk of data from
 * the device. 
 */
-uchar usbFunctionRead(uchar *data, uchar len)
-{
-	if (reportId == 1)
-	{
+uchar usbFunctionRead(uchar *data, uchar len) {
+	if (reportId == 1) {
 		//Not used
 		return 0;
-	}
-	else if (reportId == 2 || reportId == 3)
-	{
+	} else if (reportId == 2 || reportId == 3) {
 		if(len > bytesRemaining)
 			len = bytesRemaining;
 
 		//Ignore the first byte of data as it's report id
-		if (currentAddress == 0)
-		{
+		if (currentAddress == 0) {
 			data[0] = reportId;
 			eeprom_read_block(&data[1], (uchar *)0 + currentAddress + addressOffset, len - 1);
 			currentAddress += len - 1;
 			bytesRemaining -= (len - 1);
-		}
-		else
-		{
+		} else {
 			eeprom_read_block(data, (uchar *)0 + currentAddress + addressOffset, len);
 			currentAddress += len;
 			bytesRemaining -= len;
 		}
 
 		return len;
-	}
-	else
-	{
+	} else
 		return 0;
-	}
-
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
 * device. 
 */
-uchar usbFunctionWrite(uchar *data, uchar len)
-{
+uchar usbFunctionWrite(uchar *data, uchar len) {
 	if (reportId == 1) {
 		//Only send data if the color has changed
 		if (data[1] != r || data[2] != g || data[3] != b) {
@@ -138,19 +126,12 @@ uchar usbFunctionWrite(uchar *data, uchar len)
 		return 1;
 	} else 	if (reportId == 4) {
 		// switch color order "G,R,B"
-		uint8_t led_data[NUMBER_OF_LEDS * 3];
-		for (uint16_t i=0; i<NUMBER_OF_LEDS; i++) {
-			led_data[i*3 + 0] = 0;
-			led_data[i*3 + 1] = 0;
-			led_data[i*3 + 2] = 0;
-		}
-
-		led_data[data[1] * 3 + 0] = data[3];
-		led_data[data[1] * 3 + 1] = data[2];
-		led_data[data[1] * 3 + 2] = data[4];
+		ledStatus[data[1]].g = data[3];
+		ledStatus[data[1]].r = data[2];
+		ledStatus[data[1]].b = data[4];
 
 		cli(); //Disable interrupts
-		ws2812_sendarray_mask(&led_data[0], sizeof(led_data), _BV(PB1));
+		ws2812_setleds(&ledStatus[0], sizeof(ledStatus));
 		sei(); //Enable interrupts
 
 		return 1;
@@ -337,6 +318,10 @@ int main(void) {
     }
 	
     usbDeviceConnect();
+
+	// Initialize all leds to 0
+	for (i = 0; i < NUMBER_OF_LEDS; i++)
+		ledStatus[i] = { 0, 0, 0 };
   
 	sei();
 
