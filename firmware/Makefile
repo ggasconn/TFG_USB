@@ -8,7 +8,10 @@
 # This Revision: $Id: Makefile 692 2008-11-07 15:07:40Z cs $
 
 #SHELL=C:/Windows/System32/cmd.exe
-AVR_BIN_PATH = /media/raid/ggc/Downloads/arduino-1.8.19/hardware/tools/avr/bin/
+AVR_BIN_PATH = /Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin
+#/Users/jcsaez/Library/Arduino15/packages/arduino/tools/avr-gcc/4.8.1-arduino5/bin
+#
+#/media/raid/ggc/Downloads/arduino-1.8.19/hardware/tools/avr/bin/
 # AVR_BIN_PATH = ~/Library/Arduino15/packages/arduino/tools/avr-gcc/4.8.1-arduino5/bin
 
 #DEVICE  = attiny45
@@ -16,8 +19,9 @@ DEVICE  = attiny85
 F_CPU   = 16500000
 FUSE_L  = 0xe1
 FUSE_H  = 0xdd
-# PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbtiny -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
-PROGRAMM_COMMAND = /root/.arduino15/packages/digistump/tools/micronucleus/2.0a4/launcher -cdigispark --timeout 30 # edit this line for your programmer
+#PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbtiny -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
+PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
+#PROGRAMM_COMMAND = /Users/jcsaez/Library/Arduino15/packages/digistump/tools/micronucleus/2.0a4/launcher -cdigispark --timeout 30 # edit this line for your programmer
 
 CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=0 -Wno-narrowing
 OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o
