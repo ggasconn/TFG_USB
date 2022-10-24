@@ -99,6 +99,66 @@ uchar usbFunctionRead(uchar *data, uchar len) {
 		return 0;
 }
 
+
+#define	D7S_DATA 0
+#define	D7S_RCLK 1
+#define	D7S_SRCLK 2
+
+static inline void blinkled(void){
+	unsigned char oldstate;
+	int i;
+	oldstate=DDRB;
+	DDRB|=(1<<D7S_DATA);
+
+	/* Led test */
+	for (i=0;i<3;i++){
+		PORTB|=(0x1 <<  D7S_DATA);
+		_delay_ms(100);
+		PORTB&=~(1 <<  D7S_DATA);
+		_delay_ms(100);
+	}
+	DDRB=oldstate;
+}
+
+static void display7sSet(unsigned char data){
+	int i=0;
+	int value=0;
+	unsigned char oldpinstate=DDRB;
+
+	//blinkled();
+	/* Set pin mode */
+	DDRB|=(1<<D7S_DATA)|(1<<D7S_SRCLK) | (1<<D7S_RCLK) ;
+
+	for (i=0;i<8;i++){
+		if (0x80 & (data << i))
+			value=1;
+		else
+			value=0;
+
+		// gpio_set_value(display_gpio[SDI_IDX], value);
+		if (value)
+			PORTB|=(0x1 <<  D7S_DATA);
+		else
+			PORTB&=~(1 <<  D7S_DATA);
+		//gpio_set_value(display_gpio[SRCLK_IDX], 1);
+		PORTB|=	(1 <<  D7S_SRCLK);
+		_delay_ms(10);
+		//gpio_set_value(display_gpio[SRCLK_IDX], 0);
+		PORTB&=~(1 <<  D7S_SRCLK);
+		_delay_ms(10);
+	}
+
+	//gpio_set_value(display_gpio[RCLK_IDX], 1);
+	PORTB|=	1 <<  D7S_RCLK;
+	_delay_ms(10);
+	//	gpio_set_value(display_gpio[RCLK_IDX], 0);
+	PORTB&=~(1 <<  D7S_RCLK);
+
+	/* Restore pin mode */
+	DDRB=oldpinstate;
+}
+
+
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
 * device. 
 */
@@ -119,7 +179,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 			}
 
 			cli(); //Disable interrupts
-			ws2812_sendarray_mask(&led_data[0], sizeof(led_data), _BV(PB1));
+			ws2812_sendarray_mask(&led_data[0], sizeof(led_data), _BV(ws2812_pin));
 			sei(); //Enable interrupts
 		}
 
@@ -154,7 +214,11 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		}
 
 		return bytesRemaining == 0; // return 1 if this was the last chunk 
-	}else
+	} else if (reportId==5){
+		display7sSet(data[1]);
+		return 1;
+	}
+	else 
 		return 1;
 }
 
@@ -249,8 +313,11 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				bytesRemaining = 4;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
+			 } else if (reportId == 5) {
+				bytesRemaining = 1;
+				currentAddress = 0 ;
+				return USB_NO_MSG;
 			 }
-
 			 return 0;
         }
 	}
@@ -295,8 +362,10 @@ extern "C" void usbEventResetReady(void) {
     eeprom_write_byte(0, OSCCAL);   // store the calibrated value in EEPROM
 }
 
+
 /* ------------------------------------------------------------------------- */
 int main(void) {
+	
     wdt_enable(WDTO_1S);
 
 	SetSerial();
@@ -325,7 +394,9 @@ int main(void) {
   
 	sei();
 
-    for(;;){                /* main event loop */
+	blinkled();
+
+   for(;;){                /* main event loop */
         wdt_reset();
         usbPoll();
     }
