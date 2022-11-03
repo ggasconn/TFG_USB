@@ -7,12 +7,13 @@
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
 # This Revision: $Id: Makefile 692 2008-11-07 15:07:40Z cs $
 
-#SHELL=C:/Windows/System32/cmd.exe
-AVR_BIN_PATH = /Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin
-#/Users/jcsaez/Library/Arduino15/packages/arduino/tools/avr-gcc/4.8.1-arduino5/bin
-#
-#/media/raid/ggc/Downloads/arduino-1.8.19/hardware/tools/avr/bin/
-# AVR_BIN_PATH = ~/Library/Arduino15/packages/arduino/tools/avr-gcc/4.8.1-arduino5/bin
+OS := $(shell uname)
+
+ifeq ($(OS), Linux)
+	AVR_BIN_PATH = /opt/arduino/hardware/tools/avr/bin/
+else
+	AVR_BIN_PATH = /Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin
+endif
 
 #DEVICE  = attiny45
 DEVICE  = attiny85
