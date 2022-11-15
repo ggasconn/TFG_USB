@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 	sleep(1);
 
 	for (i = 0; i < NR_LEDS; i++) {
-		buf[0] = 0x4; buf[1] = i; buf[2] = 255; buf[3] = 0; buf[4] = 255;
+		buf[0] = 0x3; buf[1] = i; buf[2] = 255; buf[3] = 0; buf[4] = 255;
     	hid_write(handle, buf, 5);
 		sleep(1);
 	}
