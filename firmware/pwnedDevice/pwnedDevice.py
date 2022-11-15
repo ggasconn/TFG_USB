@@ -88,7 +88,5 @@ class PwnedDevice(object):
 
         return bytes
 
-    def set_block(self, data):
-        # TOOD
-        # self._usb_ctrl_transfer(0x20, 0x9, 0x0003, 0, self._data_to_message(data))
-        pass
+    def set_block(self, reportID, data):
+        self._usb_ctrl_transfer(0x21, 0x9, reportID, 0, data)
