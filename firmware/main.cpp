@@ -2,16 +2,16 @@
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>  /* for sei() */
-#include <util/delay.h>     /* for _delay_ms() */
 #include <string.h>
 #include <stdio.h>
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "oddebug.h"        /* This is also an example for using debug macros */
 
-extern "C"{
+extern "C" {
 	#include "usbdrv.h"
 	#include "light_ws2812/light_ws2812.h"
+	#include "utils/utils.h"
 }
 
 /* GLOBAL VARIABLES */
@@ -66,64 +66,6 @@ static uchar bytesRemaining;
 static uchar reportId = 0; 
 
 static uchar replyBuffer[33]; // 32 for data + 1 for report id
-
-#define	D7S_DATA 0
-#define	D7S_RCLK 1
-#define	D7S_SRCLK 2
-
-static inline void blinkled(void){
-	unsigned char oldstate;
-	int i;
-	oldstate=DDRB;
-	DDRB|=(1<<PB1);
-
-	/* Led test */
-	for (i=0;i<3;i++){
-		PORTB|=(0x1 <<  PB1);
-		_delay_ms(100);
-		PORTB&=~(1 <<  PB1);
-		_delay_ms(100);
-	}
-	DDRB=oldstate;
-}
-
-static void display7sSet(unsigned char data){
-	int i=0;
-	int value=0;
-	unsigned char oldpinstate=DDRB;
-
-	//blinkled();
-	/* Set pin mode */
-	DDRB|=(1<<D7S_DATA)|(1<<D7S_SRCLK) | (1<<D7S_RCLK) ;
-
-	for (i=0;i<8;i++){
-		if (0x80 & (data << i))
-			value=1;
-		else
-			value=0;
-
-		// gpio_set_value(display_gpio[SDI_IDX], value);
-		if (value)
-			PORTB|=(0x1 <<  D7S_DATA);
-		else
-			PORTB&=~(1 <<  D7S_DATA);
-		//gpio_set_value(display_gpio[SRCLK_IDX], 1);
-		PORTB|=	(1 <<  D7S_SRCLK);
-		_delay_ms(10);
-		//gpio_set_value(display_gpio[SRCLK_IDX], 0);
-		PORTB&=~(1 <<  D7S_SRCLK);
-		_delay_ms(10);
-	}
-
-	//gpio_set_value(display_gpio[RCLK_IDX], 1);
-	PORTB|=	1 <<  D7S_RCLK;
-	_delay_ms(10);
-	//	gpio_set_value(display_gpio[RCLK_IDX], 0);
-	PORTB&=~(1 <<  D7S_RCLK);
-
-	/* Restore pin mode */
-	DDRB=oldpinstate;
-}
 
 /* usbFunctionRead() is called when the host requests a chunk of data from
 * the device. 
