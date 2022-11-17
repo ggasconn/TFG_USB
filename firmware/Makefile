@@ -71,6 +71,7 @@ clean:
 	rm -f main.hex main.lst main.obj main.cof main.list main.map main.eep.hex main.elf 
 	rm -f main.o usbdrv/oddebug.o usbdrv/usbdrv.o usbdrv/usbdrvasm.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
 	rm -f light_ws2812/light_ws2812.o
+	rm -f utils/utils.o
 .cpp.o:
 	$(COMPILEPP) -c $< -o $@
 
