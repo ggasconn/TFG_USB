@@ -142,15 +142,15 @@ static void display7sSet(unsigned char data){
 			PORTB&=~(1 <<  D7S_DATA);
 		//gpio_set_value(display_gpio[SRCLK_IDX], 1);
 		PORTB|=	(1 <<  D7S_SRCLK);
-		_delay_ms(10);
+		_delay_ms(2);
 		//gpio_set_value(display_gpio[SRCLK_IDX], 0);
 		PORTB&=~(1 <<  D7S_SRCLK);
-		_delay_ms(10);
+		_delay_ms(2);
 	}
 
 	//gpio_set_value(display_gpio[RCLK_IDX], 1);
 	PORTB|=	1 <<  D7S_RCLK;
-	_delay_ms(10);
+	_delay_ms(2);
 	//	gpio_set_value(display_gpio[RCLK_IDX], 0);
 	PORTB&=~(1 <<  D7S_RCLK);
 
