@@ -264,6 +264,79 @@ out_error:
 	return retval;	
 }
 
+#define MAX_LEN_MESSAGE 255
+
+static ssize_t blink_read(struct file *file, char *user_buffer,
+			  size_t count, loff_t *ppos)
+{
+
+	struct usb_blink *dev;
+	int retval = 0;
+	unsigned char* message;	
+	int nr_bytes=0;
+
+	dev = file->private_data;
+	
+	if (*ppos>0)
+		return 0;
+
+	message=kmalloc(MAX_LEN_MESSAGE,GFP_DMA);
+
+	/* zero fill*/
+	memset(message,0,MAX_LEN_MESSAGE);
+
+#ifdef GET_MODEL
+	retval=usb_control_msg_recv(dev->udev,	
+			 0, 
+			 USB_REQ_GET_DESCRIPTOR, 
+			USB_DIR_IN | USB_TYPE_STANDARD	| USB_RECIP_DEVICE,
+			 //USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+			 (USB_DT_STRING << 8) + 0x3,	/* Descriptor index */
+			 0, 	/* wIndex=Endpoint # */
+			 message,	/* Pointer to the message */ 
+			 254, /* message's size in bytes */
+			 0, /* Dale lo necesario*/
+			 GFP_DMA);	
+#else
+	retval=usb_control_msg_recv(dev->udev,	
+			 0, 
+			 USB_REQ_CLEAR_FEATURE, 
+			//USB_DIR_IN | USB_TYPE_STANDARD	| USB_RECIP_DEVICE,
+			 USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
+			 0x2,	/* Descriptor index */
+			 0, 	/* wIndex=Endpoint # */
+			 message,	/* Pointer to the message */ 
+			 33, /* message's size in bytes */
+			 0, /* Dale lo necesario*/
+			 GFP_DMA);
+#endif
+
+
+
+	if (retval)
+		goto out_error;
+
+	//strcpy(message,"Hello world\n");
+	message[33]='\n';
+	message[34]='\0';
+	nr_bytes=strlen(message);
+
+	if (copy_to_user(user_buffer,message,strlen(message))){
+		retval=-EFAULT;
+		goto out_error;
+	}
+
+	kfree(message);
+	(*ppos)+=nr_bytes;
+	return nr_bytes;
+
+out_error:
+	if (message)
+		kfree(message);
+	return retval;	
+}
+
+
 
 /*
  * Operations associated with the character device 
@@ -273,6 +346,7 @@ out_error:
 static const struct file_operations blink_fops = {
 	.owner =	THIS_MODULE,
 	.write =	blink_write,	 	/* write() operation on the file */
+	.read =		blink_read,			/* read() operation on the file */
 	.open =		blink_open,			/* open() operation on the file */
 	.release =	blink_release, 		/* close() operation on the file */
 };
