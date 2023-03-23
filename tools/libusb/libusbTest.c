@@ -2,6 +2,30 @@
 #include <unistd.h> // sleep
 #include <libusb-1.0/libusb.h>
 
+#define MSG "Hello, World! :) Sent from the computer"
+
+void setText(libusb_device_handle *handle, unsigned int reportID) {
+    int res = -1;
+    unsigned char data[41];
+
+    data[0] = reportID;
+
+    for (int i = 1; i < 40; i++)
+        data[i] = MSG[i - 1];
+    
+    res = libusb_control_transfer(handle, // device
+                                    LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_OUT, // bmRequestType
+                                    0x9,  // bRequest 0x1 -> GET  0x9 -> SET
+                                    0x0003, // wValue
+                                    0, // wIndex
+                                    data, // data
+                                    41, // wLength
+                                    5000); // timeout
+
+    if (res < 0)
+        printf(">>> [ERROR]: Cannot send URB! Code: %d\n", res);
+}
+
 void setColor(libusb_device_handle *handle, unsigned int reportID, unsigned int r, unsigned int g, unsigned int b) {
     int res = -1;
     unsigned char data[4];
@@ -37,7 +61,7 @@ void setLedColor(libusb_device_handle *handle, unsigned int reportID, unsigned i
     res = libusb_control_transfer(handle, // device
                                     LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_OUT, // bmRequestType
                                     0x9,  // bRequest 0x1 -> GET  0x9 -> SET
-                                    0x0203, // wValue
+                                    0x0202, // wValue
                                     0, // wIndex
                                     data, // data
                                     5, // wLength
@@ -54,7 +78,7 @@ void readBlock(libusb_device_handle *handle, unsigned int reportID, unsigned int
     res = libusb_control_transfer(handle, // device
                                     LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_IN, // bmRequestType
                                     0x1,  // bRequest 0x1 -> GET  0x9 -> SET
-                                    0x0002, // wValue
+                                    0x0001, // wValue
                                     0, // wIndex
                                     data, // data
                                     nBytes, // wLength
@@ -63,6 +87,25 @@ void readBlock(libusb_device_handle *handle, unsigned int reportID, unsigned int
     if (res < 0)
         printf("Error: Failed to read from endpoint 0 with report ID 2\n");
     else
+        printf("Success: Read %d bytes from endpoint 0 with report ID 2. \n\t%s\n", res, data + 1); // Ignore first byte
+}
+
+void readTemp(libusb_device_handle *handle, unsigned int reportID, unsigned int nBytes) {
+    int res = -1;
+    unsigned char data[nBytes];
+
+    res = libusb_control_transfer(handle, // device
+                                    LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_IN, // bmRequestType
+                                    0x1,  // bRequest 0x1 -> GET  0x9 -> SET
+                                    0x0003, // wValue
+                                    0, // wIndex
+                                    data, // data
+                                    nBytes, // wLength
+                                    5000); // timeout
+
+    //if (res < 0)
+    //    printf("Error: Failed to read from endpoint 0 with report ID 2\n");
+    //else
         printf("Success: Read %d bytes from endpoint 0 with report ID 2. \n\t%s\n", res, data + 1); // Ignore first byte
 }
 
@@ -94,9 +137,16 @@ int main() {
     }
 
     readBlock(handle, 0x2, 33);
+    
+    sleep(1);
 
-    setColor(handle, 0x2, 2, 3, 4);
+    //setLedColor(handle, 0x2, 2, 21, 43, 93);
+    
+    sleep(1);
 
+    setText(handle, 0x3);
+
+    /*
     sleep(1);
 
     setLedColor(handle, 0x3, 2, 21, 43, 93);
@@ -104,7 +154,7 @@ int main() {
     setLedColor(handle, 0x3, 4, 51, 243, 83);
     sleep(1);
     setLedColor(handle, 0x3, 6, 33, 123, 23);
-
+    */
 
     libusb_release_interface(handle, 0);
     libusb_close(handle);
