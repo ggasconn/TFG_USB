@@ -7,21 +7,20 @@
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "oddebug.h"        /* This is also an example for using debug macros */
+ #include <stdint.h>
 
 extern "C" {
 	#include "usbdrv.h"
 	#include "light_ws2812/light_ws2812.h"
+<<<<<<< HEAD
 	#include "utils/utils.h"
+=======
+	#include "oled/oled.h"
+	#include "display7S/display7S.h"
+	#include "utils.h"
+>>>>>>> master
 }
 
-/* GLOBAL VARIABLES */
-#define NUMBER_OF_LEDS   12
-
-struct cRGB ledStatus[NUMBER_OF_LEDS];
-
-#define MSG "Hello, World! I'm pwnedDevice ;)"
-
-#define SERIAL_NUMBER_STR "PWND-00000.1"
 
 /* ------------------------------------------------------------------------- */
 /* ----------------------------- USB interface ----------------------------- */
@@ -30,7 +29,6 @@ struct cRGB ledStatus[NUMBER_OF_LEDS];
 // If descriptor changes, USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH also has to be updated in usbconfig.h
 
 const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] = {    /* USB report descriptor */
-
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
@@ -57,6 +55,19 @@ const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] 
     0xc0                           // END_COLLECTION
 };
 
+
+/* ------------------------------------------------------------------------- */
+/* --------------------------- Global Variables ---------------------------- */
+/* ------------------------------------------------------------------------- */
+
+#define NUMBER_OF_LEDS   12
+
+struct cRGB ledStatus[NUMBER_OF_LEDS];
+
+#define MSG "Hello, World! I'm pwnedDevice ;)"
+
+#define SERIAL_NUMBER_STR "PWND-00000.1"
+
 static volatile uint8_t r = 0;
 static volatile uint8_t g = 0;
 static volatile uint8_t b = 0;
@@ -67,6 +78,14 @@ static uchar reportId = 0;
 
 static uchar replyBuffer[33]; // 32 for data + 1 for report id
 
+<<<<<<< HEAD
+=======
+
+/* ------------------------------------------------------------------------- */
+/* ----------------------------- USB Functions ----------------------------- */
+/* ------------------------------------------------------------------------- */
+
+>>>>>>> master
 /* usbFunctionRead() is called when the host requests a chunk of data from
 * the device. 
 */
@@ -93,7 +112,6 @@ uchar usbFunctionRead(uchar *data, uchar len) {
 		return 0;
 }
 
-
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
 * device. 
 */
@@ -119,10 +137,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		}
 
 		return 1;
-	} else if (reportId == 2) {
-		// Not used
-		return 1;
-	} else 	if (reportId == 3) {
+	} else 	if (reportId == 2) {
 		// switch color order "G,R,B"
 		ledStatus[data[1]].g = data[3];
 		ledStatus[data[1]].r = data[2];
@@ -133,12 +148,39 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		sei(); //Enable interrupts
 
 		return 1;
-	} else if (reportId==5) {
+	} else if (reportId == 3) {
+		if (len > bytesRemaining)
+			len = bytesRemaining;
+
+		// Store DDRB and PORTB values for later restore
+		unsigned char DDRB_OLD = DDRB;
+		unsigned char PORTB_OLD = PORTB;
+
+		OLED_init();
+
+		// This function is called in chunks of 8 bytes, 
+		// so if we are printing the first 8 bytes screen
+		// should be cleared
+		if (currentAddress == 0)
+			OLED_clearScreen();
+		
+		// Print char by char
+		for (uint16_t i = 0; i < len; i++)
+			OLED_print(data[i]);
+
+		currentAddress += len;
+
+		DDRB = DDRB_OLD;
+		PORTB = PORTB_OLD;
+
+		return 1;
+	} else if (reportId == 4) {
 		display7sSet(data[1]);
+
 		return 1;
 	}
-	else 
-		return 1;
+	 
+	return 1;
 }
 
 #define SERIAL_NUMBER_LENGTH 12 // BSXXXXXX-1.0
@@ -155,7 +197,6 @@ uchar usbFunctionDescriptor(usbRequest_t *rq) {
    }
    return len;
 }
-
 
 /* Retrieves the serial number from EEPROM */
 static void SetSerial(void) {
@@ -185,35 +226,49 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				replyBuffer[2] = g;
 				replyBuffer[3] = b;
 
-				return 4;
+				return 4; /* Return the data from this function */
+
 			 } else if(reportId == 2) {
+
 				 replyBuffer[0] = 2; //report id
 
 				 bytesRemaining = 33;
 				 currentAddress = 0;
 
 				 return USB_NO_MSG; /* use usbFunctionRead() to obtain data */
-			 } else if(reportId == 3) {
-				 return 0;
+
 			 }
 
 			 return 0;
 
         } else if(rq->bRequest == USBRQ_HID_SET_REPORT){
 			 if (reportId == 1) { // Device colors
+
 				bytesRemaining = 3;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
-			 } else if(reportId == 2) { // Name of the device
-				return 0;
-			 } else if(reportId == 3) { // Set n LED to RGB color
+			 
+			 } else if(reportId == 2) { // Set n LED to RGB color
+			
 				bytesRemaining = 4;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
-			 } else if (reportId == 5) {
+			
+			 } else if(reportId == 3) {
+
+				/* wLenght is the amount of bytes sent */
+				bytesRemaining = rq->wLength.bytes[0];
+				currentAddress = 0;
+
+				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
+			
+			 } else if (reportId == 4) {
+			
 				bytesRemaining = 1;
 				currentAddress = 0 ;
+
 				return USB_NO_MSG;
+			
 			 }
 
 			 return 0;
@@ -259,8 +314,8 @@ extern "C" void usbEventResetReady(void) {
     eeprom_write_byte(0, OSCCAL);   // store the calibrated value in EEPROM
 }
 
-
 /* ------------------------------------------------------------------------- */
+
 int main(void) {
 	
     wdt_enable(WDTO_1S);
@@ -291,12 +346,13 @@ int main(void) {
   
 	sei();
 
-	blinkled();
+	blinkled(); // Say hi to the user ;)
 
-   for(;;){                /* main event loop */
-        wdt_reset();
-        usbPoll();
-    }
+	for(;;){                /* main event loop */
+		wdt_reset();
+		usbPoll();
+	}
+
     return 0;
 }
 

@@ -45,11 +45,11 @@ Changes all leds to the given color.
 
 ### Report ID 2
 
-Not used
+Changes specified led to specified color.
 
 ### Report ID 3
 
-Changes specified led to specified color.
+Writes on the OLED display the text sent on the payload.
 
 ### Report ID 5
 

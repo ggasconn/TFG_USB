@@ -1,4 +1,4 @@
-from ._version import  __version__
+#from ._version import  __version__
 
 import usb.core
 import usb.util
@@ -90,3 +90,13 @@ class PwnedDevice(object):
 
     def set_block(self, reportID, data):
         self._usb_ctrl_transfer(0x21, 0x9, reportID, 0, data)
+        
+
+def main():
+    dev=find_first()
+    if dev is not None:
+        r=dev.get_block(2,33)
+        print(r)
+
+if __name__ == "__main__":
+    main()
