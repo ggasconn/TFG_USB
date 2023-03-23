@@ -12,13 +12,9 @@
 extern "C" {
 	#include "usbdrv.h"
 	#include "light_ws2812/light_ws2812.h"
-<<<<<<< HEAD
-	#include "utils/utils.h"
-=======
 	#include "oled/oled.h"
 	#include "display7S/display7S.h"
 	#include "utils.h"
->>>>>>> master
 }
 
 
@@ -78,14 +74,11 @@ static uchar reportId = 0;
 
 static uchar replyBuffer[33]; // 32 for data + 1 for report id
 
-<<<<<<< HEAD
-=======
 
 /* ------------------------------------------------------------------------- */
 /* ----------------------------- USB Functions ----------------------------- */
 /* ------------------------------------------------------------------------- */
 
->>>>>>> master
 /* usbFunctionRead() is called when the host requests a chunk of data from
 * the device. 
 */
