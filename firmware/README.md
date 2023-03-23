@@ -34,10 +34,6 @@ Returns the current values for R,G and B variables. 4 bytes total including repo
 
 Returns a 33 bytes payload.
 
-### Report ID 3
-
-Not used
-
 ### Write ReportIDs
 ### Report ID 1
 
@@ -45,15 +41,15 @@ Changes all leds to the given color.
 
 ### Report ID 2
 
-Changes specified led to specified color.
+Not used
 
 ### Report ID 3
 
-Writes on the OLED display the text sent on the payload.
+Changes specified led to specified color.
 
-### Report ID 5
+### Report ID 4
 
-¿? Handled on usbFunctionWrite but not declared on descriptor. Need to check!
+Displays hex character on 7 segment display
 
 ## Userspace PwnedDevice Module
 
