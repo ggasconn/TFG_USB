@@ -1,16 +1,16 @@
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
-#include <avr/interrupt.h>  /* for sei() */
+#include <avr/interrupt.h>	/* for sei() */
 #include <string.h>
 #include <stdio.h>
 
-#include <avr/pgmspace.h>   /* required by usbdrv.h */
+#include <avr/pgmspace.h>	/* required by usbdrv.h */
 #include <stdint.h>
 
 extern "C" {
 	#include "usbdrv.h"
-	#include "oddebug.h"        /* This is also an example for using debug macros */
+	#include "oddebug.h"		/* This is also an example for using debug macros */
 	#include "light_ws2812/light_ws2812.h"
 	#include "oled/oled.h"
 	#include "display7S/display7S.h"
@@ -25,30 +25,30 @@ extern "C" {
 // If descriptor changes, USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH also has to be updated in usbconfig.h
 
 const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] = {    /* USB report descriptor */
-    0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
-    0x09, 0x01,                    // USAGE (Vendor Usage 1)
-    0xa1, 0x01,                    // COLLECTION (Application)
-    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
-    0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x85, 0x01,                    //   REPORT_ID (1)
-    0x95, 0x03,                    //   REPORT_COUNT (3)
-    0x09, 0x00,                    //   USAGE (Undefined)
-    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+	0x06, 0x00, 0xff,			   // USAGE_PAGE (Generic Desktop)
+	0x09, 0x01,					   // USAGE (Vendor Usage 1)
+	0xa1, 0x01,					   // COLLECTION (Application)
+	0x15, 0x00,					   //	LOGICAL_MINIMUM (0)
+	0x26, 0xff, 0x00,			   //	LOGICAL_MAXIMUM (255)
+	0x75, 0x08,					   //	REPORT_SIZE (8)
+	0x85, 0x01,					   //	REPORT_ID (1)
+	0x95, 0x03,					   //	REPORT_COUNT (3)
+	0x09, 0x00,					   //	USAGE (Undefined)
+	0xb2, 0x02, 0x01,			   //	FEATURE (Data,Var,Abs,Buf)
 
-    0x85, 0x02,                    //   REPORT_ID (2)
-    0x95, 0x20,                    //   REPORT_COUNT (32)
-    0x09, 0x00,                    //   USAGE (Undefined)
-    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+	0x85, 0x02,					   //	REPORT_ID (2)
+	0x95, 0x20,					   //	REPORT_COUNT (32)
+	0x09, 0x00,					   //	USAGE (Undefined)
+	0xb2, 0x02, 0x01,			   //	FEATURE (Data,Var,Abs,Buf)
 
-   	0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
-    0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x85, 0x03,                    //   REPORT_ID (3)
-    0x95, 0x04,                    //   REPORT_COUNT (4)
-    0x09, 0x00,                    //   USAGE (Undefined)
-    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
-    0xc0                           // END_COLLECTION
+	0x15, 0x00,					   //	LOGICAL_MINIMUM (0)
+	0x26, 0xff, 0x00,			   //	LOGICAL_MAXIMUM (255)
+	0x75, 0x08,					   //	REPORT_SIZE (8)
+	0x85, 0x03,					   //	REPORT_ID (3)
+	0x95, 0x04,					   //	REPORT_COUNT (4)
+	0x09, 0x00,					   //	USAGE (Undefined)
+	0xb2, 0x02, 0x01,			   //	FEATURE (Data,Var,Abs,Buf)
+	0xc0						   // END_COLLECTION
 };
 
 
@@ -56,7 +56,7 @@ const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] 
 /* --------------------------- Global Variables ---------------------------- */
 /* ------------------------------------------------------------------------- */
 
-#define NUMBER_OF_LEDS   12
+#define NUMBER_OF_LEDS	 12
 
 struct cRGB ledStatus[NUMBER_OF_LEDS];
 
@@ -130,7 +130,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		}
 
 		return 1;
-	} else 	if (reportId == 2) {
+	} else	if (reportId == 2) {
 		// switch color order "G,R,B"
 		ledStatus[data[1]].g = data[3];
 		ledStatus[data[1]].r = data[2];
@@ -177,7 +177,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 }
 
 #define SERIAL_NUMBER_LENGTH 12 // BSXXXXXX-1.0
-static int  serialNumberDescriptor[SERIAL_NUMBER_LENGTH + 1];
+static int	serialNumberDescriptor[SERIAL_NUMBER_LENGTH + 1];
 
 /* Sends the serial number when requested */
 uchar usbFunctionDescriptor(usbRequest_t *rq) {
@@ -185,8 +185,8 @@ uchar usbFunctionDescriptor(usbRequest_t *rq) {
    usbMsgPtr = 0;
    if (rq->wValue.bytes[1] == USBDESCR_STRING && rq->wValue.bytes[0] == 3) // 3 is the type of string descriptor, in this case the device serial number
    {
-      usbMsgPtr = (uchar*)serialNumberDescriptor;
-      len = sizeof(serialNumberDescriptor);
+	  usbMsgPtr = (uchar*)serialNumberDescriptor;
+	  len = sizeof(serialNumberDescriptor);
    }
    return len;
 }
@@ -209,7 +209,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 	reportId = rq->wValue.bytes[0];
 
 	if((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS){ /* HID class request */
-        if(rq->bRequest == USBRQ_HID_GET_REPORT){ /* wValue: ReportType (highbyte), ReportID (lowbyte) */
+		if(rq->bRequest == USBRQ_HID_GET_REPORT){ /* wValue: ReportType (highbyte), ReportID (lowbyte) */
 			 usbMsgPtr = replyBuffer;
 
 			 if(reportId == 1) { //Device colors
@@ -234,7 +234,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 			 return 0;
 
-        } else if(rq->bRequest == USBRQ_HID_SET_REPORT){
+		} else if(rq->bRequest == USBRQ_HID_SET_REPORT){
 			 if (reportId == 1) { // Device colors
 
 				bytesRemaining = 3;
@@ -265,77 +265,77 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 			 }
 
 			 return 0;
-        }
+		}
 	}
 
-    return 0;   /* default for not implemented requests: return no data back to host */
+	return 0;	/* default for not implemented requests: return no data back to host */
 }
 
 static void calibrateOscillator(void) {
-	uchar       step = 128;
-	uchar       trialValue = 0, optimumValue;
-	int         x, optimumDev, targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
+	uchar		step = 128;
+	uchar		trialValue = 0, optimumValue;
+	int			x, optimumDev, targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
 
-    /* do a binary search: */
-    do{
-        OSCCAL = trialValue + step;
-        x = usbMeasureFrameLength();    // proportional to current real frequency
-        if(x < targetValue)             // frequency still too low
-            trialValue += step;
-        step >>= 1;
-    }while(step > 0);
-    /* We have a precision of +/- 1 for optimum OSCCAL here */
-    /* now do a neighborhood search for optimum value */
-    optimumValue = trialValue;
-    optimumDev = x; // this is certainly far away from optimum
-    for(OSCCAL = trialValue - 1; OSCCAL <= trialValue + 1; OSCCAL++){
-        x = usbMeasureFrameLength() - targetValue;
-        if(x < 0)
-            x = -x;
-        if(x < optimumDev){
-            optimumDev = x;
-            optimumValue = OSCCAL;
-        }
-    }
-    OSCCAL = optimumValue;
+	/* do a binary search: */
+	do{
+		OSCCAL = trialValue + step;
+		x = usbMeasureFrameLength();	// proportional to current real frequency
+		if(x < targetValue)				// frequency still too low
+			trialValue += step;
+		step >>= 1;
+	}while(step > 0);
+	/* We have a precision of +/- 1 for optimum OSCCAL here */
+	/* now do a neighborhood search for optimum value */
+	optimumValue = trialValue;
+	optimumDev = x; // this is certainly far away from optimum
+	for(OSCCAL = trialValue - 1; OSCCAL <= trialValue + 1; OSCCAL++){
+		x = usbMeasureFrameLength() - targetValue;
+		if(x < 0)
+			x = -x;
+		if(x < optimumDev){
+			optimumDev = x;
+			optimumValue = OSCCAL;
+		}
+	}
+	OSCCAL = optimumValue;
 }
 
 extern "C" void usbEventResetReady(void) {
-    cli();  // usbMeasureFrameLength() counts CPU cycles, so disable interrupts.
-    calibrateOscillator();
-    sei();
-    eeprom_write_byte(0, OSCCAL);   // store the calibrated value in EEPROM
+	cli();	// usbMeasureFrameLength() counts CPU cycles, so disable interrupts.
+	calibrateOscillator();
+	sei();
+	eeprom_write_byte(0, OSCCAL);	// store the calibrated value in EEPROM
 }
 
 /* ------------------------------------------------------------------------- */
 
 int main(void) {
 
-    wdt_enable(WDTO_1S);
+	wdt_enable(WDTO_1S);
 
 	SetSerial();
-    /* Even if you don't use the watchdog, turn it off here. On newer devices,
-     * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
-     */
-    /* RESET status: all port bits are inputs without pull-up.
-     * That's the way we need D+ and D-. Therefore we don't need any
-     * additional hardware initialization.
-     */
+	/* Even if you don't use the watchdog, turn it off here. On newer devices,
+	 * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
+	 */
+	/* RESET status: all port bits are inputs without pull-up.
+	 * That's the way we need D+ and D-. Therefore we don't need any
+	 * additional hardware initialization.
+	 */
 	//blinkled();
 
 	odDebugInit();
 	odPrintf("v-usb device main\n");
 
-    usbInit();
+	usbInit();
 	sei();
 
-    usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
+	usbDeviceDisconnect();	/* enforce re-enumeration, do this while interrupts are disabled! */
 	uchar i = 0;
-    while(--i){             /* fake USB disconnect for > 250 ms */
-        wdt_reset();
-        _delay_ms(1);
-    }
-    usbDeviceConnect();
+	while(--i){				/* fake USB disconnect for > 250 ms */
+		wdt_reset();
+		_delay_ms(1);
+	}
+	usbDeviceConnect();
 
 	//blinkledRx();
 
@@ -345,12 +345,12 @@ int main(void) {
 
 	odPrintf("initialized\n");
 
-	for(;;){                /* main event loop */
+	for(;;){				/* main event loop */
 		wdt_reset();
 		usbPoll();
 	}
 
-    return 0;
+	return 0;
 }
 
 /* ------------------------------------------------------------------------- */
