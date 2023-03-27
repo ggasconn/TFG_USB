@@ -10,22 +10,41 @@
 OS := $(shell uname)
 
 ifeq ($(OS), Linux)
-	AVR_BIN_PATH = /opt/arduino/hardware/tools/avr/bin/
+	#AVR_BIN_PATH = /opt/arduino/hardware/tools/avr/bin/
+	AVR_BIN_PATH = /usr/bin/
 else
 	AVR_BIN_PATH = /Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin
 endif
 
 #DEVICE  = attiny45
 DEVICE  = atmega328p
-F_CPU   = 16500000
-FUSE_L  = 0xe1
-FUSE_H  = 0xdd
+#F_CPU   = 16500000
+#FUSE_L  = 0xe1
+#FUSE_H  = 0xdd
+
+F_CPU   = 16000000
+# Fuse L
+# CKDIV = 1  not divide by 8
+# CKOUT = 0  not output clock on port b
+# SUT1, SUT0 = 11 16K CK on power down + 14 CK + 65 ms on reset
+# CKSEL = 1111, low power crystal oscillator + Crystal oscillator, slowly rising
+# power
+FUSE_L  = 0xff
+# Fuse H
+# RSTDISBL = 1, not disable external reset (default value)
+# DWEN = 1 (defualt value)
+# SPIEN = 0, enable serial program and data downlosding (default value)
+# WDTON = 1, watchdog timer always on unprogrammed (defual value)
+# EESAVE = 1, EEPROM memory preserved through chip erase unprogrammed (default)
+# BOOTSZ1, BOOTSZ0 = 00, 2048 words (not sure)
+# BOOTRST = 1 (default)
+FUSE_H  = 0xd9
 #PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbtiny -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
-PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
+PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C /etc/avrdude.conf # edit this line for your programmer
 #PROGRAMM_COMMAND = /Users/jcsaez/Library/Arduino15/packages/digistump/tools/micronucleus/2.0a4/launcher -cdigispark --timeout 30 # edit this line for your programmer
 
-CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=0 -Wno-narrowing
-OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o oled/oled.h display7S/display7S.h utils.h
+CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=1 -Wno-narrowing
+OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o oled/oled.h display7S/display7S.h utils/utils.o utils/utils.h
 
 COMPILE = $(AVR_BIN_PATH)/avr-gcc -Wall -Os -DF_CPU=$(F_CPU)  $(CFLAGS) -mmcu=$(DEVICE)
 COMPILEPP = $(AVR_BIN_PATH)/avr-g++ -Wall -Os -DF_CPU=$(F_CPU)  $(CFLAGS) -mmcu=$(DEVICE)

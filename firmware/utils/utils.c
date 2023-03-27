@@ -7,20 +7,33 @@ void blinkled(void) {
 	int i;
 
 	oldstate=DDRB;
-	// DDRB|=(1<<PB1);
-	DDRB |= 0B100000;
+	DDRB |= (0x1 << PB5);
 
 	/* Led test */
 	for (i=0;i<3;i++) {
-		// PORTB|=(0x1 <<  PB1);
-		PORTB |= 0B100000; // Turn on led PORTB5
+		PORTB|=(0x1 <<  PB5);
 		_delay_ms(100);
-		// PORTB&=~(1 <<  PB1);
-		PORTB &= ~ 0B100000; // Turn off led PORTB5
+		PORTB &= ~(0x1 <<  PB5);
 		_delay_ms(100);
 	}
-	
 	DDRB=oldstate;
+}
+
+void blinkledRx(void) {
+	unsigned char oldstate;
+	int i;
+
+	oldstate=DDRD;
+	DDRD |= (0x1 << PD0);
+
+	/* Led test */
+	for (i=0;i<3;i++) {
+		PORTD|=(0x1 <<  PD0);
+		_delay_ms(100);
+		PORTD &= ~(0x1 <<  PD0);
+		_delay_ms(100);
+	}
+	DDRD=oldstate;
 }
 
 void display7sSet(unsigned char data) {

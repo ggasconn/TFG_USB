@@ -6,11 +6,11 @@
 #include <stdio.h>
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
-#include "oddebug.h"        /* This is also an example for using debug macros */
- #include <stdint.h>
+#include <stdint.h>
 
 extern "C" {
 	#include "usbdrv.h"
+	#include "oddebug.h"        /* This is also an example for using debug macros */
 	#include "light_ws2812/light_ws2812.h"
 	#include "oled/oled.h"
 	#include "display7S/display7S.h"
@@ -70,7 +70,7 @@ static volatile uint8_t b = 0;
 
 static uchar currentAddress;
 static uchar bytesRemaining;
-static uchar reportId = 0; 
+static uchar reportId = 0;
 
 static uchar replyBuffer[33]; // 32 for data + 1 for report id
 
@@ -80,7 +80,7 @@ static uchar replyBuffer[33]; // 32 for data + 1 for report id
 /* ------------------------------------------------------------------------- */
 
 /* usbFunctionRead() is called when the host requests a chunk of data from
-* the device. 
+* the device.
 */
 uchar usbFunctionRead(uchar *data, uchar len) {
 	if (reportId == 1) {
@@ -106,7 +106,7 @@ uchar usbFunctionRead(uchar *data, uchar len) {
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
-* device. 
+* device.
 */
 uchar usbFunctionWrite(uchar *data, uchar len) {
 	if (reportId == 1) {
@@ -151,12 +151,12 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 
 		OLED_init();
 
-		// This function is called in chunks of 8 bytes, 
+		// This function is called in chunks of 8 bytes,
 		// so if we are printing the first 8 bytes screen
 		// should be cleared
 		if (currentAddress == 0)
 			OLED_clearScreen();
-		
+
 		// Print char by char
 		for (uint16_t i = 0; i < len; i++)
 			OLED_print(data[i]);
@@ -172,7 +172,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 
 		return 1;
 	}
-	 
+
 	return 1;
 }
 
@@ -213,7 +213,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 			 usbMsgPtr = replyBuffer;
 
 			 if(reportId == 1) { //Device colors
-				 
+
 				replyBuffer[0] = 1; //report id
 				replyBuffer[1] = r;
 				replyBuffer[2] = g;
@@ -240,13 +240,13 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				bytesRemaining = 3;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
-			 
+
 			 } else if(reportId == 2) { // Set n LED to RGB color
-			
+
 				bytesRemaining = 4;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
-			
+
 			 } else if(reportId == 3) {
 
 				/* wLenght is the amount of bytes sent */
@@ -254,14 +254,14 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				currentAddress = 0;
 
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
-			
+
 			 } else if (reportId == 4) {
-			
+
 				bytesRemaining = 1;
 				currentAddress = 0 ;
 
 				return USB_NO_MSG;
-			
+
 			 }
 
 			 return 0;
@@ -275,7 +275,7 @@ static void calibrateOscillator(void) {
 	uchar       step = 128;
 	uchar       trialValue = 0, optimumValue;
 	int         x, optimumDev, targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
- 
+
     /* do a binary search: */
     do{
         OSCCAL = trialValue + step;
@@ -299,7 +299,7 @@ static void calibrateOscillator(void) {
     }
     OSCCAL = optimumValue;
 }
- 
+
 extern "C" void usbEventResetReady(void) {
     cli();  // usbMeasureFrameLength() counts CPU cycles, so disable interrupts.
     calibrateOscillator();
@@ -310,7 +310,7 @@ extern "C" void usbEventResetReady(void) {
 /* ------------------------------------------------------------------------- */
 
 int main(void) {
-	
+
     wdt_enable(WDTO_1S);
 
 	SetSerial();
@@ -321,25 +321,29 @@ int main(void) {
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
+	//blinkled();
+
+	odDebugInit();
+	odPrintf("v-usb device main\n");
 
     usbInit();
+	sei();
+
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
-    
 	uchar i = 0;
     while(--i){             /* fake USB disconnect for > 250 ms */
         wdt_reset();
         _delay_ms(1);
     }
-	
     usbDeviceConnect();
+
+	//blinkledRx();
 
 	// Initialize all leds to 0
 	for (i = 0; i < NUMBER_OF_LEDS; i++)
 		ledStatus[i] = { 0, 0, 0 };
-  
-	sei();
 
-	blinkled(); // Say hi to the user ;)
+	odPrintf("initialized\n");
 
 	for(;;){                /* main event loop */
 		wdt_reset();
