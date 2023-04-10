@@ -1,0 +1,1 @@
+cmd_/home/ggc/Documents/Estudios/Software/TFG/TFG_USB/Drivers/OLED2USB/oled2usb.mod := printf '%s\n'   oled2usb.o | awk '!x[$$0]++ { print("/home/ggc/Documents/Estudios/Software/TFG/TFG_USB/Drivers/OLED2USB/"$$0) }' > /home/ggc/Documents/Estudios/Software/TFG/TFG_USB/Drivers/OLED2USB/oled2usb.mod
