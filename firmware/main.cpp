@@ -213,6 +213,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 			 usbMsgPtr = replyBuffer;
 
 			 if(reportId == 1) { //Device colors
+				odPrintf("Received GET on ReportID 1\n");
 
 				replyBuffer[0] = 1; //report id
 				replyBuffer[1] = r;
@@ -222,13 +223,14 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				return 4; /* Return the data from this function */
 
 			 } else if(reportId == 2) {
+				odPrintf("Received GET on ReportID 2\n");
 
-				 replyBuffer[0] = 2; //report id
+				replyBuffer[0] = 2; //report id
 
-				 bytesRemaining = 33;
-				 currentAddress = 0;
+				bytesRemaining = 33;
+				currentAddress = 0;
 
-				 return USB_NO_MSG; /* use usbFunctionRead() to obtain data */
+				return USB_NO_MSG; /* use usbFunctionRead() to obtain data */
 
 			 }
 
@@ -236,18 +238,21 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 		} else if(rq->bRequest == USBRQ_HID_SET_REPORT){
 			 if (reportId == 1) { // Device colors
+				odPrintf("Received SET on ReportID 1\n");
 
 				bytesRemaining = 3;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
 
 			 } else if(reportId == 2) { // Set n LED to RGB color
+				odPrintf("Received SET on ReportID 2\n");
 
 				bytesRemaining = 4;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
 
 			 } else if(reportId == 3) {
+				odPrintf("Received SET on ReportID 3\n");
 
 				/* wLenght is the amount of bytes sent */
 				bytesRemaining = rq->wLength.bytes[0];
@@ -256,6 +261,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
 
 			 } else if (reportId == 4) {
+				odPrintf("Received SET on ReportID 4\n");
 
 				bytesRemaining = 1;
 				currentAddress = 0 ;
@@ -317,6 +323,7 @@ int main(void) {
 	/* Even if you don't use the watchdog, turn it off here. On newer devices,
 	 * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
 	 */
+	
 	/* RESET status: all port bits are inputs without pull-up.
 	 * That's the way we need D+ and D-. Therefore we don't need any
 	 * additional hardware initialization.
@@ -329,15 +336,17 @@ int main(void) {
 	usbInit();
 	sei();
 
-	usbDeviceDisconnect();	/* enforce re-enumeration, do this while interrupts are disabled! */
 	uchar i = 0;
-	while(--i){				/* fake USB disconnect for > 250 ms */
+	
+	usbDeviceDisconnect();	// enforce re-enumeration, do this while interrupts are disabled!
+	while(--i) {				// fake USB disconnect for > 250 ms
 		wdt_reset();
 		_delay_ms(1);
 	}
 	usbDeviceConnect();
+	
 
-	//blinkledRx();
+	blinkledRx();
 
 	// Initialize all leds to 0
 	for (i = 0; i < NUMBER_OF_LEDS; i++)

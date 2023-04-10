@@ -10,8 +10,8 @@
 OS := $(shell uname)
 
 ifeq ($(OS), Linux)
-	#AVR_BIN_PATH = /opt/arduino/hardware/tools/avr/bin/
-	AVR_BIN_PATH = /usr/bin/
+	AVR_BIN_PATH = /opt/arduino/hardware/tools/avr/bin/
+	# AVR_BIN_PATH = /usr/bin/
 else
 	AVR_BIN_PATH = /Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin
 endif
@@ -40,7 +40,7 @@ FUSE_L  = 0xff
 # BOOTRST = 1 (default)
 FUSE_H  = 0xd9
 #PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbtiny -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
-PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C /etc/avrdude.conf # edit this line for your programmer
+PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C $(AVR_BIN_PATH)/../etc/avrdude.conf # edit this line for your programmer
 #PROGRAMM_COMMAND = /Users/jcsaez/Library/Arduino15/packages/digistump/tools/micronucleus/2.0a4/launcher -cdigispark --timeout 30 # edit this line for your programmer
 
 CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=1 -Wno-narrowing

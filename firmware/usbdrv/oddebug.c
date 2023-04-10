@@ -56,7 +56,6 @@ int odPrintf(char *fmt, ...)
 {
     va_list ap;
     char str[256];
-    int n;
 
     va_start(ap, fmt);
     vsnprintf(str, 256, fmt, ap);
