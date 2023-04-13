@@ -1,6 +1,4 @@
 #include "utils.h"
-#include <avr/io.h>         /* for DDRB and PORTB registers */
-#include <util/delay.h>     /* for _delay_ms() */
 
 void blinkled(void) {
 	unsigned char oldstate;

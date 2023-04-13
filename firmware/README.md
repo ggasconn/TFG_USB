@@ -4,71 +4,10 @@
 ```bash
 make clean # Clean workspace
 make hex # Compile source code into an hex file
-sudo make flash # Flashes the ATTiny85 using avrdude. See details below
+sudo make program # Flashes the microcontroller using avrdude. See details below
 ```
 
 In order to make use of the `make flash` command the ATTiny85 has to be wired to an USBASP programmer and you'll need to have an Arduino IDE installed under the paths specified in the Makefile.
-
-### USBASP wiring diagram
-
-| USBASP | ATTiny85 |
-| ------ | -------- |
-| VCC    | VIN      |
-| GND    | GND      |
-| MOSI   | PB0      |
-| MISO   | PB1      |
-| SCK    | PB2      |
-| RST    | PB5      |
-
-## Functionality
-
-### Read ReportIDs
-
-All read transaction have the first byte set to the correspondent report ID.
-
-### Report ID 1
-
-Returns the current values for R,G and B variables. 4 bytes total including report ID.
-
-### Report ID 2
-
-Returns a 33 bytes payload.
-
-### Report ID 3
-
-Not used
-
-### Write ReportIDs
-### Report ID 1
-
-Changes all leds to the given color.
-
-### Report ID 2
-
-Changes specified led to specified color.
-
-### Report ID 3
-
-Writes on the OLED display the text sent on the payload.
-
-### Report ID 5
-
-¿? Handled on usbFunctionWrite but not declared on descriptor. Need to check!
-
-## Userspace PwnedDevice Module
-
-pwnedDevice is a Python 3 module that has a few functions built-in to allow communication with the device skipping the kernel coding stage for fast prototyping.
-
-### Read data example
-
-```python
-from pwnedDevice import pwnedDevice # Import module
-b = pwnedDevice.find_first() # Find connected device
-b.get_block(3, 33) # Sends READ request to ReportID 3 asking for 33 bytes of data.
-
-```
-
-
 
 ## Notes of interest
 

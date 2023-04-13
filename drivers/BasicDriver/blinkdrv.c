@@ -201,7 +201,7 @@ static ssize_t blink_write(struct file *file, const char *user_buffer,
 	strcfg[count]='\0';
 
 	if (sscanf(strcfg,"7s %x",&i)==1 && (i>=0 && i<=15)){		
-		colors[0]=0x5;
+		colors[0]=0x4;
 		colors[1]=display_code[i];
 
 
@@ -209,7 +209,7 @@ static ssize_t blink_write(struct file *file, const char *user_buffer,
 			 usb_sndctrlpipe(dev->udev,00), /* Specify endpoint #0 */
 			 USB_REQ_SET_CONFIGURATION, 
 			 USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-			 /* 0x200 | */ 5,	/* wValue */
+			 /* 0x200 | */ 4,	/* wValue */
 			 0, 	/* wIndex=Endpoint # */
 			 colors,	/* Pointer to the message */ 
 			 2, /* message's size in bytes */
@@ -304,7 +304,7 @@ static ssize_t blink_read(struct file *file, char *user_buffer,
 			//USB_DIR_IN | USB_TYPE_STANDARD	| USB_RECIP_DEVICE,
 			 USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
 			 0x2,	/* Descriptor index */
-			 0, 	/* wIndex=Endpoint # */
+			 0x0002, 	/* wIndex=Endpoint # */
 			 message,	/* Pointer to the message */ 
 			 33, /* message's size in bytes */
 			 0, /* Dale lo necesario*/
@@ -371,7 +371,7 @@ char* set_device_permissions(struct device *dev, umode_t *mode)
  * and to have the device registered with the driver core
  */
 static struct usb_class_driver blink_class = {
-	.name =		"blinkstick%d",  /* Pattern used to create device files */	
+	.name =		"pwnedDevice%d",  /* Pattern used to create device files */	
 	.devnode=	set_device_permissions,	
 	.fops =		&blink_fops,
 	.minor_base =	USB_BLINK_MINOR_BASE,
@@ -420,7 +420,7 @@ static int blink_probe(struct usb_interface *interface,
 
 	/* let the user know what node this device is now attached to */	
 	dev_info(&interface->dev,
-		 "Blinkstick device now attached to blinkstick-%d",
+		 "PwnedDevice now available via pwnedDevice-%d",
 		 interface->minor);
 	return 0;
 
@@ -452,7 +452,7 @@ static void blink_disconnect(struct usb_interface *interface)
 	/* decrement our usage count */
 	kref_put(&dev->kref, blink_delete);
 
-	dev_info(&interface->dev, "Blinkstick device #%d has been disconnected", minor);
+	dev_info(&interface->dev, "PwnedDevice device #%d has been disconnected", minor);
 }
 
 /* Define these values to match your devices */
@@ -467,7 +467,7 @@ static const struct usb_device_id blink_table[] = {
 MODULE_DEVICE_TABLE(usb, blink_table);
 
 static struct usb_driver blink_driver = {
-	.name =		"blinkstick",
+	.name =		"pwnedDevice",
 	.probe =	blink_probe,
 	.disconnect =	blink_disconnect,
 	.id_table =	blink_table,

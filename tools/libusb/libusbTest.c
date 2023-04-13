@@ -78,7 +78,7 @@ void readBlock(libusb_device_handle *handle, unsigned int reportID, unsigned int
     res = libusb_control_transfer(handle, // device
                                     LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_IN, // bmRequestType
                                     0x1,  // bRequest 0x1 -> GET  0x9 -> SET
-                                    0x0001, // wValue
+                                    0x0002, // wValue
                                     0, // wIndex
                                     data, // data
                                     nBytes, // wLength
@@ -137,14 +137,6 @@ int main() {
     }
 
     readBlock(handle, 0x2, 33);
-    
-    sleep(1);
-
-    //setLedColor(handle, 0x2, 2, 21, 43, 93);
-    
-    sleep(1);
-
-    setText(handle, 0x3);
 
     /*
     sleep(1);

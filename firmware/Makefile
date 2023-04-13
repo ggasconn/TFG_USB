@@ -44,7 +44,7 @@ PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C $(AV
 #PROGRAMM_COMMAND = /Users/jcsaez/Library/Arduino15/packages/digistump/tools/micronucleus/2.0a4/launcher -cdigispark --timeout 30 # edit this line for your programmer
 
 CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=1 -Wno-narrowing
-OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o oled/oled.h display7S/display7S.h utils/utils.o utils/utils.h
+OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o oled/oled.h display7S/display7S.h utils/utils.o
 
 COMPILE = $(AVR_BIN_PATH)/avr-gcc -Wall -Os -DF_CPU=$(F_CPU)  $(CFLAGS) -mmcu=$(DEVICE)
 COMPILEPP = $(AVR_BIN_PATH)/avr-g++ -Wall -Os -DF_CPU=$(F_CPU)  $(CFLAGS) -mmcu=$(DEVICE)
@@ -90,6 +90,8 @@ clean:
 	rm -f main.hex main.lst main.obj main.cof main.list main.map main.eep.hex main.elf 
 	rm -f main.o usbdrv/oddebug.o usbdrv/usbdrv.o usbdrv/usbdrvasm.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
 	rm -f light_ws2812/light_ws2812.o
+	rm -f dht/DHT.o
+	rm -f utils/utils.o
 
 .cpp.o:
 	$(COMPILEPP) -c $< -o $@

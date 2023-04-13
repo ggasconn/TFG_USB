@@ -14,7 +14,7 @@ extern "C" {
 	#include "light_ws2812/light_ws2812.h"
 	#include "oled/oled.h"
 	#include "display7S/display7S.h"
-	#include "utils.h"
+	#include "utils/utils.h"
 }
 
 
@@ -231,8 +231,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				currentAddress = 0;
 
 				return USB_NO_MSG; /* use usbFunctionRead() to obtain data */
-
-			 }
+			 } 
 
 			 return 0;
 
@@ -320,6 +319,7 @@ int main(void) {
 	wdt_enable(WDTO_1S);
 
 	SetSerial();
+
 	/* Even if you don't use the watchdog, turn it off here. On newer devices,
 	 * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
 	 */
@@ -328,10 +328,9 @@ int main(void) {
 	 * That's the way we need D+ and D-. Therefore we don't need any
 	 * additional hardware initialization.
 	 */
-	//blinkled();
 
 	odDebugInit();
-	odPrintf("v-usb device main\n");
+	odPrintf("V-USB device initializing... ");
 
 	usbInit();
 	sei();
@@ -352,7 +351,7 @@ int main(void) {
 	for (i = 0; i < NUMBER_OF_LEDS; i++)
 		ledStatus[i] = { 0, 0, 0 };
 
-	odPrintf("initialized\n");
+	odPrintf("OK!\n");
 
 	for(;;){				/* main event loop */
 		wdt_reset();
