@@ -18,6 +18,7 @@ endif
 
 #DEVICE  = attiny45
 DEVICE  = atmega328p
+DEVICE_ID = 1 #edit this to 0 for using attiny
 #F_CPU   = 16500000
 #FUSE_L  = 0xe1
 #FUSE_H  = 0xdd

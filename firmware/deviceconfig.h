@@ -1,5 +1,5 @@
-// change values for attiny85
-#ifdef attiny45
+#ifndef DEVIDE_ID
+// ATTmega
 #define DEVICE_PORT PORTB
 #define DEVICE_PIN DDRB
  
@@ -16,7 +16,8 @@
 #define	D7S_RCLK 1
 #define	D7S_SRCLK 2
 
-#elif defined(atmega328p)
+#else
+// ATTiny
 #define DEVICE_PORT PORTB
 #define DEVICE_PIN DDRB
  
