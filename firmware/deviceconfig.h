@@ -1,6 +1,3 @@
-#include <avr/io.h>
-#include <avr/pgmspace.h>       // for using data in program space
-
 // change values for attiny85
 #ifdef attiny45
 #define DEVICE_PORT PORTB
