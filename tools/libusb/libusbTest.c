@@ -73,8 +73,12 @@ void setLedColor(libusb_device_handle *handle, unsigned int reportID, unsigned i
 
 void readBlock(libusb_device_handle *handle, unsigned int reportID, unsigned int nBytes) {
     int res = -1;
-    unsigned char data[nBytes];
+    unsigned char data[8];
+    int len = 0;
 
+    int ret = libusb_interrupt_transfer(handle, 0x81, data, sizeof(8), &len, 0);
+
+    /*
     res = libusb_control_transfer(handle, // device
                                     LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_IN, // bmRequestType
                                     0x1,  // bRequest 0x1 -> GET  0x9 -> SET
@@ -83,6 +87,7 @@ void readBlock(libusb_device_handle *handle, unsigned int reportID, unsigned int
                                     data, // data
                                     nBytes, // wLength
                                     5000); // timeout
+    */
 
     if (res < 0)
         printf("Error: Failed to read from endpoint 0 with report ID 2\n");
