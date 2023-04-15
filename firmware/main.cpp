@@ -57,12 +57,14 @@ const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] 
 /* ------------------------------------------------------------------------- */
 
 #define NUMBER_OF_LEDS	 12
+#define INTERRUPT_TRANSFER_SIZE  8
 
 struct cRGB ledStatus[NUMBER_OF_LEDS];
 
 #define MSG "Hello, World! I'm pwnedDevice ;)"
 
 #define SERIAL_NUMBER_STR "PWND-00000.1"
+uchar INT_IN_MSG[INTERRUPT_TRANSFER_SIZE] = "Hello;)";
 
 static volatile uint8_t r = 0;
 static volatile uint8_t g = 0;
@@ -356,6 +358,11 @@ int main(void) {
 	for(;;){				/* main event loop */
 		wdt_reset();
 		usbPoll();
+
+		/* Check if there's any INTERRUPT IN URB to fill in */
+		if(usbInterruptIsReady())
+			usbSetInterrupt(INT_IN_MSG, INTERRUPT_TRANSFER_SIZE); // Fill URB buffer with data;
+	
 	}
 
 	return 0;
