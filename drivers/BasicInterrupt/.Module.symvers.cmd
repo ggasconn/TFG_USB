@@ -1,1 +1,0 @@
-cmd_/home/ggc/Documents/Estudios/Software/TFG/TFG_USB/drivers/BasicInterrupt/Module.symvers := sed 's/ko$$/o/' /home/ggc/Documents/Estudios/Software/TFG/TFG_USB/drivers/BasicInterrupt/modules.order | scripts/mod/modpost -m -a  -o /home/ggc/Documents/Estudios/Software/TFG/TFG_USB/drivers/BasicInterrupt/Module.symvers -e -i Module.symvers   -T -
