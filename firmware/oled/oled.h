@@ -1,23 +1,21 @@
 #include <avr/pgmspace.h>       // for using data in program space
-
-#define I2C_SCL         PB2     // serial clock pin
-#define I2C_SDA         PB0     // serial data pin
+#include "../deviceconfig.h"
 
 // -----------------------------------------------------------------------------
 // I2C Implementation
 // -----------------------------------------------------------------------------
 
 // I2C macros
-#define I2C_SDA_HIGH()  DDRB &= ~(1<<I2C_SDA) // release SDA   -> pulled HIGH by resistor
-#define I2C_SDA_LOW()   DDRB |=  (1<<I2C_SDA) // SDA as output -> pulled LOW  by MCU
-#define I2C_SCL_HIGH()  DDRB &= ~(1<<I2C_SCL) // release SCL   -> pulled HIGH by resistor
-#define I2C_SCL_LOW()   DDRB |=  (1<<I2C_SCL) // SCL as output -> pulled LOW  by MCU
+#define I2C_SDA_HIGH()  DEVICE_PIN &= ~(1<<OLED_SDA) // release SDA   -> pulled HIGH by resistor
+#define I2C_SDA_LOW()   DEVICE_PIN |=  (1<<OLED_SDA) // SDA as output -> pulled LOW  by MCU
+#define I2C_SCL_HIGH()  DEVICE_PIN &= ~(1<<OLED_SCL) // release SCL   -> pulled HIGH by resistor
+#define I2C_SCL_LOW()   DEVICE_PIN |=  (1<<OLED_SCL) // SCL as output -> pulled LOW  by MCU
 #define I2C_DELAY()     asm("lpm");asm("lpm") // delay 2*3 clock cycles
 
 // I2C init function
 void I2C_init(void) {
-  DDRB  &= ~((1<<I2C_SDA)|(1<<I2C_SCL));  // pins as input (HIGH-Z) -> lines released
-  PORTB &= ~((1<<I2C_SDA)|(1<<I2C_SCL));  // should be LOW when as ouput
+  DEVICE_PIN  &= ~((1<<OLED_SDA)|(1<<OLED_SCL));  // pins as input (HIGH-Z) -> lines released
+  DEVICE_PORT &= ~((1<<OLED_SDA)|(1<<OLED_SCL));  // should be LOW when as ouput
 }
 
 // I2C transmit one data byte to the slave, ignore ACK bit, no clock stretching allowed
