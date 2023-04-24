@@ -17,7 +17,6 @@ extern "C" {
 	#include "utils/utils.h"
 }
 
-
 /* ------------------------------------------------------------------------- */
 /* ----------------------------- USB interface ----------------------------- */
 /* ------------------------------------------------------------------------- */
@@ -173,6 +172,27 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		display7sSet(data[1]);
 
 		return 1;
+	} else if (reportId == 5) {
+		uchar stopTimer = data[1];
+
+		if (stopTimer)
+			clearTimer1();
+		else 
+			blinkPWM();
+
+		return 1;
+	} else if (reportId == 6) {
+		uchar stopTimer = data[1];
+
+		if (stopTimer)
+			clearTimer1();
+		else {
+			long int frequency = (data[2] << 24) | (data[3] << 16) | (data[4] << 8) | data[5];
+			
+			hardwarePWMBeep(frequency);
+		}
+
+		return 1;
 	}
 
 	return 1;
@@ -233,7 +253,8 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 				currentAddress = 0;
 
 				return USB_NO_MSG; /* use usbFunctionRead() to obtain data */
-			 } 
+
+			 }
 
 			 return 0;
 
@@ -269,6 +290,22 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 				return USB_NO_MSG;
 
+			 } else if (reportId == 5) {
+				odPrintf("Received SET on ReportID 5\n");
+				
+				bytesRemaining = 2;
+				currentAddress = 0;
+
+				return USB_NO_MSG;
+
+			 } else if (reportId == 6) {
+				odPrintf("Received SET on ReportID 6\n");
+				
+				bytesRemaining = 6;
+				currentAddress = 0;
+
+				return USB_NO_MSG;
+
 			 }
 
 			 return 0;
@@ -282,6 +319,8 @@ static void calibrateOscillator(void) {
 	uchar		step = 128;
 	uchar		trialValue = 0, optimumValue;
 	int			x, optimumDev, targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
+
+	odPrintf("Calibrating osc\n");
 
 	/* do a binary search: */
 	do{
@@ -346,7 +385,6 @@ int main(void) {
 	}
 	usbDeviceConnect();
 	
-
 	blinkledRx();
 
 	// Initialize all leds to 0
@@ -362,7 +400,6 @@ int main(void) {
 		/* Check if there's any INTERRUPT IN URB to fill in */
 		if(usbInterruptIsReady())
 			usbSetInterrupt(INT_IN_MSG, INTERRUPT_TRANSFER_SIZE); // Fill URB buffer with data;
-	
 	}
 
 	return 0;
