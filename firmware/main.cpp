@@ -84,10 +84,7 @@ static uchar replyBuffer[33]; // 32 for data + 1 for report id
 * the device.
 */
 uchar usbFunctionRead(uchar *data, uchar len) {
-	if (reportId == 1) {
-		//Not used
-		return 0;
-	} else if (reportId == 2) {
+	if (reportId == 2) {
 		if(len > bytesRemaining)
 			len = bytesRemaining;
 
@@ -102,8 +99,9 @@ uchar usbFunctionRead(uchar *data, uchar len) {
 		}
 
 		return len;
-	} else
-		return 0;
+	}
+
+	return 0;
 }
 
 /* usbFunctionWrite() is called when the host sends a chunk of data to the
