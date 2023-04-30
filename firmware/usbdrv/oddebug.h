@@ -27,7 +27,7 @@ the output and a memory block to dump in hex ('data' and 'len').
 
 
 #ifndef F_CPU
-#   define  F_CPU   16000000    /* 12 MHz */
+#   define  F_CPU   16000000    /* 16 MHz */
 #endif
 
 /* make sure we have the UART defines: */
@@ -122,7 +122,7 @@ int odPrintf(char *fmt, ...);
 #else
 #   define odDebugInit()
 #	define odDebug()
-#	define odPrintf()
+#	define odPrintf(...)
 #endif
 
 /* ------------------------------------------------------------------------- */

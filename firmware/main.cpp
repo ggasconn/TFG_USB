@@ -11,10 +11,18 @@
 extern "C" {
 	#include "usbdrv.h"
 	#include "oddebug.h"		/* This is also an example for using debug macros */
+	
+	#if LED_PARTY == 1
 	#include "light_ws2812/light_ws2812.h"
+	#endif
+	
+	#if DISPLAYS == 1
 	#include "oled/oled.h"
 	#include "display7S/display7S.h"
+	#endif
+
 	#include "utils/utils.h"
+	#include "deviceconfig.h"
 }
 
 /* ------------------------------------------------------------------------- */
@@ -84,7 +92,7 @@ static uchar replyBuffer[33]; // 32 for data + 1 for report id
 * the device.
 */
 uchar usbFunctionRead(uchar *data, uchar len) {
-	if (reportId == 2) {
+	if (reportId == 1) {
 		if(len > bytesRemaining)
 			len = bytesRemaining;
 
@@ -108,6 +116,7 @@ uchar usbFunctionRead(uchar *data, uchar len) {
 * device.
 */
 uchar usbFunctionWrite(uchar *data, uchar len) {
+	#if LED_PARTY == 1
 	if (reportId == 1) {
 		//Only send data if the color has changed
 		if (data[1] != r || data[2] != g || data[3] != b) {
@@ -140,7 +149,11 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		sei(); //Enable interrupts
 
 		return 1;
-	} else if (reportId == 3) {
+	}
+	#endif
+
+	#if DISPLAYS == 1
+	if (reportId == 3) {
 		if (len > bytesRemaining)
 			len = bytesRemaining;
 
@@ -170,7 +183,11 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		display7sSet(data[1]);
 
 		return 1;
-	} else if (reportId == 5) {
+	} 
+	#endif
+
+	#if PWM == 1
+	if (reportId == 5) {
 		uchar stopTimer = data[1];
 
 		if (stopTimer)
@@ -192,6 +209,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 
 		return 1;
 	}
+	#endif
 
 	return 1;
 }
@@ -232,46 +250,54 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 		if(rq->bRequest == USBRQ_HID_GET_REPORT){ /* wValue: ReportType (highbyte), ReportID (lowbyte) */
 			 usbMsgPtr = replyBuffer;
 
-			 if(reportId == 1) { //Device colors
+			if (reportId == 1) {
 				odPrintf("Received GET on ReportID 1\n");
 
-				replyBuffer[0] = 1; //report id
-				replyBuffer[1] = r;
-				replyBuffer[2] = g;
-				replyBuffer[3] = b;
-
-				return 4; /* Return the data from this function */
-
-			 } else if(reportId == 2) {
-				odPrintf("Received GET on ReportID 2\n");
-
-				replyBuffer[0] = 2; //report id
+				replyBuffer[0] = 2; // report id
 
 				bytesRemaining = 33;
 				currentAddress = 0;
 
 				return USB_NO_MSG; /* use usbFunctionRead() to obtain data */
 
-			 }
+			} 
+			#if LED_PARTY == 1
+			else if(reportId == 2) { // Device colors
+				odPrintf("Received GET on ReportID 2\n");
 
-			 return 0;
+				replyBuffer[0] = 1; // report id
+				replyBuffer[1] = r;
+				replyBuffer[2] = g;
+				replyBuffer[3] = b;
 
-		} else if(rq->bRequest == USBRQ_HID_SET_REPORT){
-			 if (reportId == 1) { // Device colors
+				return 4; /* Return the data from this function */
+			}
+			#endif
+
+			return 0;
+
+		} else if(rq->bRequest == USBRQ_HID_SET_REPORT) {
+
+			#if LED_PARTY == 1
+			if (reportId == 1) { // Device colors
 				odPrintf("Received SET on ReportID 1\n");
 
 				bytesRemaining = 3;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
 
-			 } else if(reportId == 2) { // Set n LED to RGB color
+			} else if (reportId == 2) { // Set n LED to RGB color
 				odPrintf("Received SET on ReportID 2\n");
 
 				bytesRemaining = 4;
 				currentAddress = 0;
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
 
-			 } else if(reportId == 3) {
+			}
+			#endif
+
+			#if DISPLAYS == 1
+			if (reportId == 3) {
 				odPrintf("Received SET on ReportID 3\n");
 
 				/* wLenght is the amount of bytes sent */
@@ -280,7 +306,7 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 				return USB_NO_MSG; /* use usbFunctionWrite() to receive data from host */
 
-			 } else if (reportId == 4) {
+			} else if (reportId == 4) {
 				odPrintf("Received SET on ReportID 4\n");
 
 				bytesRemaining = 1;
@@ -288,7 +314,11 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 				return USB_NO_MSG;
 
-			 } else if (reportId == 5) {
+			}
+			#endif
+
+			#if PWM == 1
+			if (reportId == 5) {
 				odPrintf("Received SET on ReportID 5\n");
 				
 				bytesRemaining = 2;
@@ -296,17 +326,17 @@ extern "C" usbMsgLen_t usbFunctionSetup(uchar data[8]) {
 
 				return USB_NO_MSG;
 
-			 } else if (reportId == 6) {
+			} else if (reportId == 6) {
 				odPrintf("Received SET on ReportID 6\n");
 				
 				bytesRemaining = 6;
 				currentAddress = 0;
 
 				return USB_NO_MSG;
+			}
+			#endif
 
-			 }
-
-			 return 0;
+			return 0;
 		}
 	}
 
@@ -317,8 +347,6 @@ static void calibrateOscillator(void) {
 	uchar		step = 128;
 	uchar		trialValue = 0, optimumValue;
 	int			x, optimumDev, targetValue = (unsigned)(1499 * (double)F_CPU / 10.5e6 + 0.5);
-
-	odPrintf("Calibrating osc\n");
 
 	/* do a binary search: */
 	do{
@@ -385,9 +413,11 @@ int main(void) {
 	
 	blinkledRx();
 
+	#if LED_PARTY == 1
 	// Initialize all leds to 0
 	for (i = 0; i < NUMBER_OF_LEDS; i++)
 		ledStatus[i] = { 0, 0, 0 };
+	#endif
 
 	odPrintf("OK!\n");
 
@@ -395,9 +425,11 @@ int main(void) {
 		wdt_reset();
 		usbPoll();
 
+		#if DISPLAYS == 1
 		/* Check if there's any INTERRUPT IN URB to fill in */
 		if(usbInterruptIsReady())
 			usbSetInterrupt(INT_IN_MSG, INTERRUPT_TRANSFER_SIZE); // Fill URB buffer with data;
+		#endif
 	}
 
 	return 0;

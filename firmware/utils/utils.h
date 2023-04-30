@@ -2,19 +2,19 @@
 #define UTILS_H_
 
 #include <avr/io.h>         /* for DDRB and PORTB registers */
-#include <util/delay.h>
+#include <util/delay.h>     /* for _delay_ms() */
 
-#define	D7S_DATA 0
-#define	D7S_RCLK 1
-#define	D7S_SRCLK 2
+#if DISPLAYS == 1
+void display7sSet(unsigned char data);
+#endif
 
-#define BUZZER_PIN PB0 // set the pin for the buzzer
+#if PWM == 1
+void blinkPWM(void);
+void hardwarePWMBeep(uint16_t frequency);
+#endif
 
 void blinkled(void);
-void blinkPWM(void);
 void blinkledRx(void);
-void display7sSet(unsigned char data);
-void hardwarePWMBeep(uint16_t frequency);
 void clearTimer1();
 
 #endif /* UTILS_H_ */

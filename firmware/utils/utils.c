@@ -1,49 +1,24 @@
 #include "utils.h"
 
-void blinkled(void) {
-	unsigned char oldstate;
-	int i;
-
-	oldstate=DDRB;
-	DDRB |= (0x1 << PB5);
-
-	/* Led test */
-	for (i=0;i<3;i++) {
-		PORTB|=(0x1 <<  PB5);
-		_delay_ms(1000);
-		PORTB &= ~(0x1 <<  PB5);
-		_delay_ms(1000);
-	}
-
-	DDRB=oldstate;
-}
-
+#if PWM == 1
 void blinkPWM(void) {
-	DDRB   |= (1 << PORTB1);      //Set PB1 as output
+	DDRB   |= (1 << PWM_LED);      //Set PB1 as output
 	TCCR1A |= (1 << COM1A0);      //Set PB1/OC1A to toggle on timer
 	TCCR1B |= (1 << WGM12);       //Set timer CTC mode
 	OCR1A   = 31249;              //Set count limit 1 sec @ 16MHz, 256 divisor
 	TCCR1B |= (1 << CS12);
 }
 
-void blinkledRx(void) {
-	unsigned char oldstate;
-	int i;
-
-	oldstate=DDRD;
-	DDRD |= (0x1 << PD0);
-
-	/* Led test */
-	for (i=0;i<3;i++) {
-		PORTD|=(0x1 <<  PD0);
-		_delay_ms(100);
-		PORTD &= ~(0x1 <<  PD0);
-		_delay_ms(100);
-	}
-
-	DDRD=oldstate;
+void hardwarePWMBeep(uint16_t frequency) {
+	DDRB   |= (1 << PORTB1); //Set PB1 as output
+	TCCR1A |= (1 << COM1A0); //Set PB1/OC1A to toggle on timer
+	TCCR1B |= (1 << WGM12); //Set timer CTC mode
+	OCR1A   = F_CPU / 2 / 1 - frequency; //Set count limit 1 sec @ 16MHz, 256 divisor
+	TCCR1B |= (1 << CS10);
 }
+#endif
 
+#if DISPLAYS == 1
 void display7sSet(unsigned char data) {
 	int i=0;
 	int value=0;
@@ -80,13 +55,42 @@ void display7sSet(unsigned char data) {
 	/* Restore pin mode */
 	DDRB=oldpinstate;
 }
+#endif
 
-void hardwarePWMBeep(uint16_t frequency) {
-	DDRB   |= (1 << PORTB1); //Set PB1 as output
-	TCCR1A |= (1 << COM1A0); //Set PB1/OC1A to toggle on timer
-	TCCR1B |= (1 << WGM12); //Set timer CTC mode
-	OCR1A   = F_CPU / 2 / 1 - frequency; //Set count limit 1 sec @ 16MHz, 256 divisor
-	TCCR1B |= (1 << CS10);
+void blinkled(void) {
+	unsigned char oldstate;
+	int i;
+
+	oldstate=DDRB;
+	DDRB |= (0x1 << BUILTIN_LED);
+
+	/* Led test */
+	for (i=0;i<3;i++) {
+		PORTB |=(0x1 <<  BUILTIN_LED);
+		_delay_ms(1000);
+		PORTB &= ~(0x1 <<  BUILTIN_LED);
+		_delay_ms(1000);
+	}
+
+	DDRB=oldstate;
+}
+
+void blinkledRx(void) {
+	unsigned char oldstate;
+	int i;
+
+	oldstate=DDRD;
+	DDRD |= (0x1 << RX_LED);
+
+	/* Led test */
+	for (i=0;i<3;i++) {
+		PORTD|=(0x1 <<  RX_LED);
+		_delay_ms(100);
+		PORTD &= ~(0x1 <<  RX_LED);
+		_delay_ms(100);
+	}
+
+	DDRD=oldstate;
 }
 
 void clearTimer1() {

@@ -9,6 +9,9 @@
 
 OS := $(shell uname)
 
+# Available values: ALL_DEVICES, LED_PARTY, DISPLAYS, PWM
+TEMPLATE = ALL_DEVICES
+
 ifeq ($(OS), Linux)
 	AVR_BIN_PATH = /opt/arduino/hardware/tools/avr/bin/
 	# AVR_BIN_PATH = /usr/bin/
@@ -18,6 +21,7 @@ endif
 
 #DEVICE  = attiny45
 DEVICE  = atmega328p
+DEVICE_ID = 1 #edit this to 0 for using attiny
 #F_CPU   = 16500000
 #FUSE_L  = 0xe1
 #FUSE_H  = 0xdd
@@ -44,10 +48,19 @@ PROGRAMM_COMMAND = $(AVR_BIN_PATH)/avrdude -c usbasp -P usb -p $(DEVICE) -C $(AV
 #PROGRAMM_COMMAND = /Users/jcsaez/Library/Arduino15/packages/digistump/tools/micronucleus/2.0a4/launcher -cdigispark --timeout 30 # edit this line for your programmer
 
 CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=1 -Wno-narrowing
-OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o oled/oled.h display7S/display7S.h utils/utils.o
 
-COMPILE = $(AVR_BIN_PATH)/avr-gcc -Wall -Os -DF_CPU=$(F_CPU)  $(CFLAGS) -mmcu=$(DEVICE)
-COMPILEPP = $(AVR_BIN_PATH)/avr-g++ -Wall -Os -DF_CPU=$(F_CPU)  $(CFLAGS) -mmcu=$(DEVICE)
+ifeq ($(TEMPLATE), ALL_DEVICES)
+	OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o oled/oled.h display7S/display7S.h utils/utils.o
+else ifeq ($(TEMPLATE), LED_PARTY)
+	OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o light_ws2812/light_ws2812.o utils/utils.o
+else ifeq ($(TEMPLATE), DISPLAYS)
+	OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o oled/oled.h display7S/display7S.h utils/utils.o
+else ifeq ($(TEMPLATE), PWM)
+	OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o utils/utils.o
+endif
+
+COMPILE = $(AVR_BIN_PATH)/avr-gcc -Wall -Os -DF_CPU=$(F_CPU) $(CFLAGS) -mmcu=$(DEVICE) -include deviceconfig.h
+COMPILEPP = $(AVR_BIN_PATH)/avr-g++ -Wall -Os -DF_CPU=$(F_CPU) $(CFLAGS) -mmcu=$(DEVICE) -include deviceconfig.h
 
 # symbolic targets:
 help:
