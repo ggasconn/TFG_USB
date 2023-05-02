@@ -1,1 +1,0 @@
-cmd_/home/ggc/Documents/Estudios/Software/TFG/TFG_USB/Drivers/BasicDriver/blinkdrv.mod := printf '%s\n'   blinkdrv.o | awk '!x[$$0]++ { print("/home/ggc/Documents/Estudios/Software/TFG/TFG_USB/Drivers/BasicDriver/"$$0) }' > /home/ggc/Documents/Estudios/Software/TFG/TFG_USB/Drivers/BasicDriver/blinkdrv.mod
