@@ -34,6 +34,6 @@
 #endif
 
 #if PWM == 1
-    #define BUZZER_PIN PB0
+    #define BUZZER_PIN PORTB1
     #define PWM_LED PORTB1
 #endif

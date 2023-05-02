@@ -10,7 +10,7 @@ void blinkPWM(void) {
 }
 
 void hardwarePWMBeep(uint16_t frequency) {
-	DDRB   |= (1 << PORTB1); //Set PB1 as output
+	DDRB   |= (1 << BUZZER_PIN); //Set PB1 as output
 	TCCR1A |= (1 << COM1A0); //Set PB1/OC1A to toggle on timer
 	TCCR1B |= (1 << WGM12); //Set timer CTC mode
 	OCR1A   = F_CPU / 2 / 1 - frequency; //Set count limit 1 sec @ 16MHz, 256 divisor

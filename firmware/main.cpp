@@ -58,7 +58,6 @@ const PROGMEM char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] 
 	0xc0						   // END_COLLECTION
 };
 
-
 /* ------------------------------------------------------------------------- */
 /* --------------------------- Global Variables ---------------------------- */
 /* ------------------------------------------------------------------------- */
@@ -132,9 +131,9 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 				led_data[i*3 + 2] = data[3];
 			}
 
-			cli(); //Disable interrupts
+			// cli(); //Disable interrupts
 			ws2812_sendarray_mask(&led_data[0], sizeof(led_data), _BV(ws2812_pin));
-			sei(); //Enable interrupts
+			// sei(); //Enable interrupts
 		}
 
 		return 1;
@@ -144,9 +143,9 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		ledStatus[data[1]].r = data[2];
 		ledStatus[data[1]].b = data[4];
 
-		cli(); //Disable interrupts
+		// cli(); //Disable interrupts
 		ws2812_setleds(&ledStatus[0], sizeof(ledStatus));
-		sei(); //Enable interrupts
+		// sei(); //Enable interrupts
 
 		return 1;
 	}
