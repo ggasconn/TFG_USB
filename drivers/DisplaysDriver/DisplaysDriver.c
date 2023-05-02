@@ -125,10 +125,9 @@ static ssize_t pwnedDevice_write(struct file *file, const char *user_buffer,
 		goto out_error;
 	}
 
-	if (sscanf(strcfg, "oled %s", buffer) != 0) {
-		/* TODO: REVIEW! SSCANF DOESNT TAKE SPACES! %[^\n] */
-		strcpy(buffer, strcfg);
-		dataSize = count;
+	if (strstr(strcfg, "oled ") != NULL) {
+		strcpy(buffer, strcfg + 5); // Remove oled command
+		dataSize = count - 5;
 		wValue = 3;
 	} else if (sscanf(strcfg,"7s %x", &digit) == 1) {
 		buffer[0] = 4; // ReportID
