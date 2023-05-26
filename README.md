@@ -6,6 +6,7 @@
 * `drivers/`: kernel drivers for handling the communication with the device
 * `firmware/`: AVR code. Uses VUSB to emulate a low speed USB device.
 * `tools/`: Custom tools, mainly designed for communicating with the device skipping the kernel coding stage
+* `scripts/`: Scripts to use the device with a loaded driver
 
 ## Device
 
@@ -41,4 +42,12 @@ This branch uses the ATMega328P microcontroller.
     
   * **Report ID 4**
 
-​				Displays the hexadecimal number sent on the 7S display.
+    Displays the hexadecimal number sent on the 7S display.
+
+  * **Report ID 5**
+  
+    Blink a led using a PWM signal
+
+  * **Report ID 6**
+  
+    Beep the buzzer using PWM

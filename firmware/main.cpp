@@ -424,11 +424,9 @@ int main(void) {
 		wdt_reset();
 		usbPoll();
 
-		#if DISPLAYS == 1
 		/* Check if there's any INTERRUPT IN URB to fill in */
 		if(usbInterruptIsReady())
 			usbSetInterrupt(INT_IN_MSG, INTERRUPT_TRANSFER_SIZE); // Fill URB buffer with data;
-		#endif
 	}
 
 	return 0;
