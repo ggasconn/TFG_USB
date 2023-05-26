@@ -26,11 +26,11 @@
     #define OLED_SDA PB0
 
     // Display 7seg
-    #define D7S_PORT PORTB
-    #define D7S_PIN DDRB
-    #define	D7S_DATA 0
-    #define	D7S_RCLK 1
-    #define	D7S_SRCLK 2
+    #define D7S_PORT PORTD
+    #define D7S_PIN DDRD
+    #define	D7S_DATA 5
+    #define	D7S_RCLK 6
+    #define	D7S_SRCLK 7
 #endif
 
 #if PWM == 1
