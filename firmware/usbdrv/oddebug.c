@@ -19,6 +19,12 @@ static void uartPutc(char c)
     ODDBG_UDR = c;
 }
 
+static void uartPutStr(char *c)
+{
+	while (*c != '\0')
+		uartPutc(*c++);
+}
+
 static uchar    hexAscii(uchar h)
 {
     h &= 0xf;
@@ -45,5 +51,20 @@ void    odDebug(uchar prefix, uchar *data, uchar len)
     uartPutc('\r');
     uartPutc('\n');
 }
+
+int odPrintf(char *fmt, ...)
+{
+    va_list ap;
+    char str[256];
+
+    va_start(ap, fmt);
+    vsnprintf(str, 256, fmt, ap);
+    uartPutStr(str);
+    va_end(ap);
+    return 0;
+}
+
+
+
 
 #endif

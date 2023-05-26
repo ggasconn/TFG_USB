@@ -1,6 +1,6 @@
 /*
  * Simple driver for the Blinkstick Strip USB device (v1.0)
- *cd ..
+ * 
  * Copyright (C) 2018 Juan Carlos Saez (jcsaezal@ucm.es)
  *
  *	This program is free software; you can redistribute it and/or
@@ -94,249 +94,55 @@ static int blink_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
-
-#define NR_LEDS 12
-#define NR_BYTES_BLINK_MSG 5
-#define REPORT_ID	0x4
-
-
-static int parse_color_string(char* strconfig,unsigned char* colorspec){
-	char* flag;
-	char* cfg=strconfig;
-	unsigned int colors;
-	int nr_led;
-	int error=0;
-	int base_index=NR_BYTES_BLINK_MSG==5?2:1;
-
-	/* Clean all */
-	if (strcmp(strconfig,"\n")==0)
-		return 0;
-
-	while((flag = strsep(&cfg, ","))!=NULL)
-        {
-		if(sscanf(flag,"%i:0x%x", &nr_led, &colors)==2)
-		{
-			if ((nr_led<0 || nr_led>=NR_LEDS))
-			{
-				error=-EINVAL;
-				printk(KERN_INFO "No such led: %i\n",nr_led);
-				break;
-			}
-				
-			colorspec[nr_led*NR_BYTES_BLINK_MSG+base_index]=((colors>>16) & 0xff);
- 			colorspec[nr_led*NR_BYTES_BLINK_MSG+base_index+1]=((colors>>8) & 0xff);
- 			colorspec[nr_led*NR_BYTES_BLINK_MSG+base_index+2]=(colors & 0xff);
-		} else
-		{
-			error=-EINVAL;
-			break;
-		}
-
-	}
-
-	return error;
-
-}
-
-
-#define DS_A	0x80
-#define DS_B	0x40
-#define DS_C	0x20
-#define DS_D	0x10
-#define DS_E	0x08
-#define DS_F	0x04
-#define DS_G	0x02
-#define DS_DP  0x01
-
-#define LEDS_D0	(DS_A|DS_B|DS_C|DS_D|DS_E|DS_F)
-#define LEDS_D1	(DS_B|DS_C)
-#define LEDS_D2	(DS_A|DS_B|DS_G|DS_D|DS_E)
-#define LEDS_D3	(DS_A|DS_B|DS_C|DS_D|DS_G)
-#define LEDS_D4	(DS_B|DS_C|DS_F|DS_G)
-#define LEDS_D5	(DS_A|DS_F|DS_G|DS_C|DS_D)
-#define LEDS_D6	(DS_A|DS_C|DS_D|DS_E|DS_F|DS_G)
-#define LEDS_D7	(DS_A|DS_B|DS_C)
-#define LEDS_D8	(DS_A|DS_B|DS_C|DS_D|DS_E|DS_F|DS_G)
-#define LEDS_D9	(DS_A|DS_B|DS_C|DS_F|DS_G)
-#define LEDS_DA	(DS_A|DS_B|DS_C|DS_E|DS_F|DS_G)
-#define LEDS_DB	(DS_A|DS_B|DS_C|DS_D|DS_E|DS_F|DS_G|DS_DP)
-#define LEDS_DC	(DS_A|DS_D|DS_E|DS_F)
-#define LEDS_DD	(DS_A|DS_B|DS_C|DS_D|DS_E|DS_F|DS_DP)
-#define LEDS_DE	(DS_A|DS_D|DS_E|DS_F|DS_G)
-#define LEDS_DF	(DS_A|DS_E|DS_F|DS_G)
-
-const int display_code[]={LEDS_D0,LEDS_D1,LEDS_D2,LEDS_D3,LEDS_D4,
-					LEDS_D5,LEDS_D6,LEDS_D7,LEDS_D8,LEDS_D9,
-					LEDS_DA,LEDS_DB,LEDS_DC,LEDS_DD,LEDS_DE,LEDS_DF};
-
-
-/* Script para probar el write 
-$ while true; do for led in `seq 0 1 12`; do echo $led:0x100511  > /dev/usb/blinkstick0 ; sleep 0.25; done; done
-*/
-
 static ssize_t blink_write(struct file *file, const char *user_buffer,
 			  size_t count, loff_t *ppos)
 {
-
 	struct usb_blink *dev;
 	int retval = 0;
-	int i=0;
-	unsigned char* colors;	/* Matriz NR_LEDS x NR_BYTES_BLINK_MSG  */
-	char* strcfg=NULL;
+	char* userText=NULL;
 
 	dev = file->private_data;
-	
-	colors=kmalloc(NR_BYTES_BLINK_MSG*NR_LEDS,GFP_DMA);
 
-	/* zero fill*/
-	memset(colors,0,NR_LEDS*NR_BYTES_BLINK_MSG);
-
-	if ((strcfg=kmalloc(count+1, GFP_KERNEL))==NULL)
+	// Allocate memory to copy the message
+	if ((userText=kmalloc(count+1, GFP_KERNEL))==NULL)
 		return -ENOMEM;
 
-	if (copy_from_user(strcfg,user_buffer,count)){
+	// Safe copy from user space to kernel space
+	if (copy_from_user(userText, user_buffer, count)){
 		retval=-EFAULT;
 		goto out_error;
 	}
-	strcfg[count]='\0';
+	userText[count]='\0'; // End string properly
 
-	if (sscanf(strcfg,"7s %x",&i)==1 && (i>=0 && i<=15)){		
-		colors[0]=0x5;
-		colors[1]=display_code[i];
+	printk(KERN_ALERT "Received string: %s", userText);
 
-
-		retval=usb_control_msg(dev->udev,	
+	retval=usb_control_msg(dev->udev,	
 			 usb_sndctrlpipe(dev->udev,00), /* Specify endpoint #0 */
 			 USB_REQ_SET_CONFIGURATION, 
 			 USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-			 /* 0x200 | */ 5,	/* wValue */
+			 0x0003, // ReportID 4
 			 0, 	/* wIndex=Endpoint # */
-			 colors,	/* Pointer to the message */ 
-			 2, /* message's size in bytes */
+			 userText,	/* Pointer to the message */ 
+			 count, /* message's size in bytes */
 			 0);
 		
-		if (retval<0 && retval!=-EPIPE){
-			printk(KERN_ALERT "Executed with retval=%d\n",retval);
-			goto out_error;		
-		}
-
-		goto ok_path;
+	if (retval < 0 && retval != -EPIPE){
+		printk(KERN_ALERT "Executed with retval=%d\n",retval);
+		goto out_error;		
 	}
 
-	if ((retval=parse_color_string(strcfg,colors)))
-		goto out_error;
-
-	for (i=0;i<NR_LEDS;i++){
-		/* Force reportID and LED number as it was not previously initialized */
-		colors[i*NR_BYTES_BLINK_MSG]=REPORT_ID;
-		if (NR_BYTES_BLINK_MSG==5)
-			colors[i*NR_BYTES_BLINK_MSG+1]=i;
-
-		retval=usb_control_msg(dev->udev,	
-			 usb_sndctrlpipe(dev->udev,00), /* Specify endpoint #0 */
-			 USB_REQ_SET_CONFIGURATION, 
-			 USB_DIR_OUT| USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-			 /* 0x200 | */ REPORT_ID,	/* wValue */
-			 0, 	/* wIndex=Endpoint # */
-			 &colors[i*NR_BYTES_BLINK_MSG],	/* Pointer to the message */ 
-			 NR_BYTES_BLINK_MSG, /* message's size in bytes */
-			 0);	
-
-
-		if (retval<0 && retval!=-EPIPE){
-			printk(KERN_ALERT "Executed with retval=%d\n",retval);
-			goto out_error;		
-		}
-		if (NR_BYTES_BLINK_MSG==4)
-			break;
-	}
+	goto ok_path;
 
 ok_path:
-	kfree(strcfg);
-	kfree(colors);
+	kfree(userText);
 	(*ppos)+=count;
 	return count;
 
 out_error:
-	if (strcfg)
-		kfree(strcfg);
-	kfree(colors);
+	if (userText)
+		kfree(userText);
 	return retval;	
 }
-
-#define MAX_LEN_MESSAGE 255
-
-static ssize_t blink_read(struct file *file, char *user_buffer,
-			  size_t count, loff_t *ppos)
-{
-
-	struct usb_blink *dev;
-	int retval = 0;
-	unsigned char* message;	
-	int nr_bytes=0;
-
-	dev = file->private_data;
-	
-	if (*ppos>0)
-		return 0;
-
-	message=kmalloc(MAX_LEN_MESSAGE,GFP_DMA);
-
-	/* zero fill*/
-	memset(message,0,MAX_LEN_MESSAGE);
-
-#ifdef GET_MODEL
-	retval=usb_control_msg_recv(dev->udev,	
-			 0, 
-			 USB_REQ_GET_DESCRIPTOR, 
-			USB_DIR_IN | USB_TYPE_STANDARD	| USB_RECIP_DEVICE,
-			 //USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-			 (USB_DT_STRING << 8) + 0x3,	/* Descriptor index */
-			 0, 	/* wIndex=Endpoint # */
-			 message,	/* Pointer to the message */ 
-			 254, /* message's size in bytes */
-			 0, /* Dale lo necesario*/
-			 GFP_DMA);	
-#else
-	retval=usb_control_msg_recv(dev->udev,	
-			 0, 
-			 USB_REQ_CLEAR_FEATURE, 
-			//USB_DIR_IN | USB_TYPE_STANDARD	| USB_RECIP_DEVICE,
-			 USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_DEVICE,
-			 0x2,	/* Descriptor index */
-			 0, 	/* wIndex=Endpoint # */
-			 message,	/* Pointer to the message */ 
-			 33, /* message's size in bytes */
-			 0, /* Dale lo necesario*/
-			 GFP_DMA);
-#endif
-
-
-
-	if (retval)
-		goto out_error;
-
-	//strcpy(message,"Hello world\n");
-	message[33]='\n';
-	message[34]='\0';
-	nr_bytes=strlen(message);
-
-	if (copy_to_user(user_buffer,message,strlen(message))){
-		retval=-EFAULT;
-		goto out_error;
-	}
-
-	kfree(message);
-	(*ppos)+=nr_bytes;
-	return nr_bytes;
-
-out_error:
-	if (message)
-		kfree(message);
-	return retval;	
-}
-
-
 
 /*
  * Operations associated with the character device 
@@ -346,7 +152,6 @@ out_error:
 static const struct file_operations blink_fops = {
 	.owner =	THIS_MODULE,
 	.write =	blink_write,	 	/* write() operation on the file */
-	.read =		blink_read,			/* read() operation on the file */
 	.open =		blink_open,			/* open() operation on the file */
 	.release =	blink_release, 		/* close() operation on the file */
 };
@@ -371,9 +176,9 @@ char* set_device_permissions(struct device *dev, umode_t *mode)
  * and to have the device registered with the driver core
  */
 static struct usb_class_driver blink_class = {
-	.name =		"blinkstick%d",  /* Pattern used to create device files */	
-	.devnode=	set_device_permissions,	
-	.fops =		&blink_fops,
+	.name =			"oled2usb%d",  /* Pattern used to create device files */	
+	.devnode=		set_device_permissions,	
+	.fops =			&blink_fops,
 	.minor_base =	USB_BLINK_MINOR_BASE,
 };
 
@@ -420,7 +225,7 @@ static int blink_probe(struct usb_interface *interface,
 
 	/* let the user know what node this device is now attached to */	
 	dev_info(&interface->dev,
-		 "Blinkstick device now attached to blinkstick-%d",
+		 "PwnedDevice now available via pwnedDevice-%d",
 		 interface->minor);
 	return 0;
 
@@ -452,7 +257,7 @@ static void blink_disconnect(struct usb_interface *interface)
 	/* decrement our usage count */
 	kref_put(&dev->kref, blink_delete);
 
-	dev_info(&interface->dev, "Blinkstick device #%d has been disconnected", minor);
+	dev_info(&interface->dev, "PwnedDevice device #%d has been disconnected", minor);
 }
 
 /* Define these values to match your devices */
@@ -467,10 +272,10 @@ static const struct usb_device_id blink_table[] = {
 MODULE_DEVICE_TABLE(usb, blink_table);
 
 static struct usb_driver blink_driver = {
-	.name =		"blinkstick",
-	.probe =	blink_probe,
+	.name =			"pwnedDevice",
+	.probe =		blink_probe,
 	.disconnect =	blink_disconnect,
-	.id_table =	blink_table,
+	.id_table =		blink_table,
 };
 
 /* Module initialization */

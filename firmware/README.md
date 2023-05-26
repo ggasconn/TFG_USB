@@ -4,7 +4,7 @@
 ```bash
 make clean # Clean workspace
 make hex # Compile source code into an hex file
-sudo make flash # Flashes the ATTiny85 using avrdude. See details below
+sudo make program # Flashes the microcontroller using avrdude. See details below
 ```
 
 In order to make use of the `make flash` command the ATTiny85 has to be wired to an USBASP programmer and you'll need to have an Arduino IDE installed under the paths specified in the Makefile.

@@ -10,6 +10,9 @@
 #ifndef __oddebug_h_included__
 #define __oddebug_h_included__
 
+#include <stdarg.h>
+#include <stdio.h>
+
 /*
 General Description:
 This module implements a function for debug logs on the serial line of the
@@ -24,7 +27,7 @@ the output and a memory block to dump in hex ('data' and 'len').
 
 
 #ifndef F_CPU
-#   define  F_CPU   16000000    /* 12 MHz */
+#   define  F_CPU   16000000    /* 16 MHz */
 #endif
 
 /* make sure we have the UART defines: */
@@ -45,13 +48,13 @@ the output and a memory block to dump in hex ('data' and 'len').
 
 /* ------------------------------------------------------------------------- */
 
-#if DEBUG_LEVEL > 0
+#if DEBUG_LEVEL > 1
 #   define  DBG1(prefix, data, len) odDebug(prefix, data, len)
 #else
 #   define  DBG1(prefix, data, len)
 #endif
 
-#if DEBUG_LEVEL > 1
+#if DEBUG_LEVEL > 2
 #   define  DBG2(prefix, data, len) odDebug(prefix, data, len)
 #else
 #   define  DBG2(prefix, data, len)
@@ -113,8 +116,13 @@ static inline void  odDebugInit(void)
     ODDBG_UCR |= (1<<ODDBG_TXEN);
     ODDBG_UBRR = F_CPU / (19200 * 16L) - 1;
 }
+
+int odPrintf(char *fmt, ...);
+
 #else
 #   define odDebugInit()
+#	define odDebug()
+#	define odPrintf(...)
 #endif
 
 /* ------------------------------------------------------------------------- */
